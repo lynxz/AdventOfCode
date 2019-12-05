@@ -10,43 +10,12 @@ namespace Day5
         static void Main(string[] args)
         {
             var program = new Program();
-            program.SecondStar();
+            program.FirstStar();
         }
 
         public void FirstStar()
         {
-            var pos = 0;
-            var ops = GetData().ToList();
-            while (true)
-            {
-                var data = Evaluate(pos, ops);
-                if (data[0] == 99)
-                {
-                    System.Console.WriteLine("HALT!");
-                    return;
-                }
-                else if (data[0] == 1)
-                {
-                    ops[data[3]] = data[1] + data[2];
-                }
-                else if (data[0] == 2)
-                {
-                    ops[data[3]] = data[1] * data[2];
-                }
-                else if (data[0] == 3)
-                {
-                    ops[data[1]] = 1;
-                }
-                else if (data[0] == 4)
-                {
-                    System.Console.WriteLine(data[1]);
-                }
-                else
-                {
-                    throw new InvalidOperationException();
-                }
-                pos += data.Length;
-            }
+            RunProgram(GetData().ToList(), 1);
         }
 
         int[] Evaluate(int pos, List<int> ops)
@@ -106,13 +75,16 @@ namespace Day5
             {
                 throw new InvalidOperationException();
             }
-
         }
 
         public void SecondStar()
         {
+            RunProgram(GetData().ToList(), 5);
+        }
+
+        private void RunProgram(List<int> ops, int input)
+        {
             var pos = 0;
-            var ops = GetData().ToList();
             while (true)
             {
                 var data = Evaluate(pos, ops);
@@ -131,7 +103,7 @@ namespace Day5
                 }
                 else if (data[0] == 3)
                 {
-                    ops[data[1]] = 5;
+                    ops[data[1]] = input;
                 }
                 else if (data[0] == 4)
                 {
@@ -139,21 +111,23 @@ namespace Day5
                 }
                 else if (data[0] == 5)
                 {
-                    if (data[1] != 0) {
+                    if (data[1] != 0)
+                    {
                         pos = data[2];
                         data = new int[0];
                     }
                 }
                 else if (data[0] == 6)
                 {
-                    if (data[1] == 0) {
+                    if (data[1] == 0)
+                    {
                         pos = data[2];
                         data = new int[0];
                     }
                 }
                 else if (data[0] == 7)
                 {
-                   ops[data[3]] = data[1] < data[2] ? 1 : 0;
+                    ops[data[3]] = data[1] < data[2] ? 1 : 0;
                 }
                 else if (data[0] == 8)
                 {
@@ -166,7 +140,6 @@ namespace Day5
                 pos += data.Length;
             }
         }
-
 
         IEnumerable<int> GetData()
             => File.ReadAllLines("input.txt").First().Split(',').Select(i => int.Parse(i));
