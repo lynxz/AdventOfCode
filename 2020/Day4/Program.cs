@@ -11,7 +11,7 @@ namespace Day4
         static void Main(string[] args)
         {
             var prg = new Program();
-            //prg.FirstStar();
+            prg.FirstStar();
             prg.SecondStar();
         }
 
@@ -26,16 +26,16 @@ namespace Day4
                 var dict = fields.ToDictionary(f => f, f => false);
                 while (i < data.Count && !string.IsNullOrEmpty(data[i]))
                 {
-                    var v = data[i].Split(" ").Select(d => d.Split(":")[0]);
-                    foreach (var a in v)
+                    var rowFields = data[i].Split(" ").Select(d => d.Split(":")[0]);
+                    foreach (var field in rowFields)
                     {
-                        dict[a] = true;
+                        dict[field] = true;
                     }
                     i++;
                 }
 
-                var fields2 = new[] { "byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid" };
-                if (fields2.All(f => dict[f]))
+                var validationFields = new[] { "byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid" };
+                if (validationFields.All(f => dict[f]))
                 {
                     validCounter++;
                 }
@@ -53,16 +53,16 @@ namespace Day4
                 var dict = fields.ToDictionary(f => f, f => false);
                 while (i < data.Count && !string.IsNullOrEmpty(data[i]))
                 {
-                    var v = data[i].Split(" ").ToDictionary(d => d.Split(":")[0], d => d.Split(":")[1]);
-                    foreach (var a in v)
+                    var fieldsAndValues = data[i].Split(" ").ToDictionary(d => d.Split(":")[0], d => d.Split(":")[1]);
+                    foreach (var kvp in fieldsAndValues)
                     {
-                        dict[a.Key] = Validator(a.Key, a.Value);
+                        dict[kvp.Key] = Validator(kvp.Key, kvp.Value);
                     }
                     i++;
                 }
 
-                var fields2 = new[] { "byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid" };
-                if (fields2.All(f => dict[f]))
+                var validationFields = new[] { "byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid" };
+                if (validationFields.All(f => dict[f]))
                 {
                     validCounter++;
                 }
