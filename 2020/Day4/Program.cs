@@ -18,24 +18,11 @@ namespace Day4
 
         void FirstStar()
         {
-            var fields = new[] { "byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid", "cid" };
             var data = GetData().ToList();
             int validCounter = 0;
-            for (int i = 0; i < data.Count; i++)
-            {
-                var dict = fields.ToDictionary(f => f, f => false);
-                while (i < data.Count && !string.IsNullOrEmpty(data[i]))
-                {
-                    var rowFields = data[i].Split(" ").Select(d => d.Split(":")[0]);
-                    foreach (var field in rowFields)
-                    {
-                        dict[field] = true;
-                    }
-                    i++;
-                }
-
+            foreach (var pass in data) {
                 var validationFields = new[] { "byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid" };
-                if (validationFields.All(f => dict[f]))
+                if (validationFields.All(f => pass.ContainsKey(f)))
                 {
                     validCounter++;
                 }
@@ -45,24 +32,11 @@ namespace Day4
 
         void SecondStar()
         {
-            var fields = new[] { "byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid", "cid" };
             var data = GetData().ToList();
             int validCounter = 0;
-            for (int i = 0; i < data.Count; i++)
-            {
-                var dict = fields.ToDictionary(f => f, f => false);
-                while (i < data.Count && !string.IsNullOrEmpty(data[i]))
-                {
-                    var fieldsAndValues = data[i].Split(" ").ToDictionary(d => d.Split(":")[0], d => d.Split(":")[1]);
-                    foreach (var kvp in fieldsAndValues)
-                    {
-                        dict[kvp.Key] = Validator(kvp.Key, kvp.Value);
-                    }
-                    i++;
-                }
-
+            foreach (var pass in data) {
                 var validationFields = new[] { "byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid" };
-                if (validationFields.All(f => dict[f]))
+                if (validationFields.All(f => pass.ContainsKey(f) && Validator(f, pass[f])))
                 {
                     validCounter++;
                 }
@@ -83,7 +57,7 @@ namespace Day4
                 case "eyr":
                     var v3 = int.Parse(value);
                     return v3 >= 2020 && v3 <= 2030;
-                    case "hgt":
+                case "hgt":
                     var h = int.Parse(new string(value.Where(c => char.IsNumber(c)).ToArray()));
                     if (value.Contains("in"))
                         return h >= 59 && h <= 76;
@@ -91,9 +65,9 @@ namespace Day4
                 case "hcl":
                     return value.Length == 7 && Regex.Match(value, "#[a-f0-9]*").Success;
                 case "ecl":
-                    return (new [] {"amb", "blu", "brn", "gry", "grn", "hzl", "oth"}).Any(c => c == value);
+                    return (new[] { "amb", "blu", "brn", "gry", "grn", "hzl", "oth" }).Any(c => c == value);
                 case "pid":
-                    return value.All(c =>  char.IsNumber(c)) && value.Count(c => char.IsNumber(c)) == 9;
+                    return value.All(c => char.IsNumber(c)) && value.Count(c => char.IsNumber(c)) == 9;
                 case "cid":
                     return true;
 
@@ -102,7 +76,24 @@ namespace Day4
             throw new Exception();
         }
 
-        IEnumerable<string> GetData() => File.ReadAllLines("data.txt");
+        IEnumerable<Dictionary<string, string>> GetData()
+        {
+            var lines = File.ReadAllLines("data.txt");
+            for (int i = 0; i < lines.Length; i++)
+            {
+                var dict = new Dictionary<string, string>();
+                while (i < lines.Length && !string.IsNullOrEmpty(lines[i]))
+                {
+                    var fieldsAndValues = lines[i].Split(" ").Select(d => d.Split(":"));
+                    foreach (var kvp in fieldsAndValues)
+                    {
+                        dict.Add(kvp[0], kvp[1]);
+                    }
+                    i++;
+                }
+                yield return dict;
+            }
+        }
 
     }
 }
