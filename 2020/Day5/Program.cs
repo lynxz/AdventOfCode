@@ -34,9 +34,7 @@ namespace Day5
 
             System.Console.WriteLine(max);
         }
-
         
-
         void SecondStar()
         {
             var data = GetData().ToList();
