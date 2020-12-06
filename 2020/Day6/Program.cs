@@ -10,40 +10,23 @@ namespace Day6
         static void Main(string[] args)
         {
             var prg = new Program();
-            //prg.FirstStar();
+            prg.FirstStar();
             prg.SecondStar();
         }
 
         void FirstStar()
         {
             var data = GetData().ToList();
-            var result = 0;
-            foreach (var l in data)
-            {
-                var set = new HashSet<char>();
-                foreach (char c in Enumerable.Range('a', 'z' - 'a' + 1))
-                {
-                    if (l.Contains(c)) 
-                        set.Add(c);
-                }
-                result += set.Count;
-            }
+            var result = data.Sum(l => l.Where(c => char.IsLetter(c)).Distinct().Count());
+
             System.Console.WriteLine(result);
         }
 
         void SecondStar()
         {
             var data = GetData().ToList();
-            var result = 0;
-            foreach (var l in data)
-            {
-                var set = new int['z' - 'a' + 1];
-                foreach (char c in Enumerable.Range('a', 'z' - 'a' + 1))
-                {
-                    set[c-'a'] = l.Count(v => v == c);
-                }
-                result += set.Count(i => i == l.Count(c => c == '\n') + 1);
-            }
+            var result = data.Sum(l => Enumerable.Range('a', 26).Select(c => l.Count(v => v == c)).Count(i => i == l.Count(c => c == '\n') + 1));
+
             System.Console.WriteLine(result);
         }
 
