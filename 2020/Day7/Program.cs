@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using QuickGraph;
 
 namespace Day7
 {
@@ -11,67 +10,61 @@ namespace Day7
         static void Main(string[] args)
         {
             var prg = new Program();
-            //prg.FirstStar();
+            prg.FirstStar();
             prg.SecondStar();
         }
 
         void FirstStar()
         {
-            var data = GetData().ToList();
-            var dict = new Dictionary<string, List<string>>();
-            var regEx = new Regex(@"(\d+)\s(\w+\s\w+)\sbag");
-            foreach (var l in data)
-            {
-                var bag = l.Substring(0, l.IndexOf("bags") - 1);
-                dict.Add(bag, new List<string>());
-                var subBags = regEx.Matches(l.Split("contain")[1]);
-                foreach (Match match in subBags)
-                {
-                    dict[bag].Add(match.Groups[2].Value);
-                }
-            }
-            var set = new HashSet<string>();
-            Selection("shiny gold", dict, set);
-            System.Console.WriteLine(set.Count);
-        }
-
-        void Selection(string bag, Dictionary<string, List<string>> dict, HashSet<string> set)
-        {
-            foreach (var key in dict.Keys)
-            {
-                if (dict[key].Any(v => v == bag)) {
-                    set.Add(key);
-                    Selection(key, dict, set);
-                }
-            }
-            return;
+            var graph = GetGraph();
+            var result = graph.Vertices.Where(v => v != "shiny gold").Count(v => graph.IsConnected(v, "shiny gold"));
+            System.Console.WriteLine(result);
         }
 
         void SecondStar()
         {
-            var data = GetData().ToList();
-            var dict = new Dictionary<string, List<(string Bag,int Count)>>();
+            var graph = GetGraph();
+            var result = graph.SumEdges("shiny gold");
+            System.Console.WriteLine(result);
+        }
+
+        AdjacencyGraph<string, TaggedEdge<string, int>> GetGraph()
+        {
+            var data = File.ReadAllLines("data.txt");
+            var graph = new AdjacencyGraph<string, TaggedEdge<string, int>>();
             var regEx = new Regex(@"(\d+)\s(\w+\s\w+)\sbag");
+
             foreach (var l in data)
             {
                 var bag = l.Substring(0, l.IndexOf("bags") - 1);
-                dict.Add(bag, new List<(string Bag, int Count)>());
+                if (!graph.ContainsVertex(bag))
+                {
+                    graph.AddVertex(bag);
+                }
                 var subBags = regEx.Matches(l.Split("contain")[1]);
                 foreach (Match match in subBags)
                 {
-                    dict[bag].Add((match.Groups[2].Value, int.Parse(match.Groups[1].Value)));
+                    var subBag = match.Groups[2].Value;
+                    if (!graph.ContainsVertex(subBag))
+                    {
+                        graph.AddVertex(subBag);
+                    }
+                    var count = int.Parse(match.Groups[1].Value);
+                    graph.AddEdge(new TaggedEdge<string, int>(bag, subBag, count));
                 }
             }
-            
-            CalcBags("shiny gold", dict);
-            System.Console.WriteLine(CalcBags("shiny gold", dict));
-        }
 
-        int CalcBags(string bag, Dictionary<string, List<(string Bag,int Count)>> dict) {
-            var subBags = dict[bag];
-            return subBags.Sum(b => b.Count + b.Count*CalcBags(b.Bag, dict));
+            return graph;
         }
+    }
 
-        IEnumerable<string> GetData() => File.ReadAllLines("data.txt");
+    static class Extensions
+    {
+        public static bool IsConnected(this AdjacencyGraph<string, TaggedEdge<string, int>> graph, string start, string end)
+            => graph.OutEdges(start).Any(e => e.Target == end) || graph.OutEdges(start).Any(e => IsConnected(graph, e.Target, end));
+
+        public static int SumEdges(this AdjacencyGraph<string, TaggedEdge<string, int>> graph, string vertex)
+            => graph.OutEdges(vertex).Sum(e => e.Tag + e.Tag * graph.SumEdges(e.Target));
+
     }
 }
