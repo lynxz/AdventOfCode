@@ -61,6 +61,15 @@ namespace Day10
                     var angle = Math.Atan2(xDist, yDist);
                     return (c.Item1, c.Item2, angle, dist: Math.Sqrt(xDist * xDist + yDist * yDist));
                 })
+                .Where(a => 
+                    Math.Abs(a.angle) < 0.001 || 
+                    Math.Abs(Math.PI - a.angle) < 0.001 ||
+                    Math.Abs(Math.PI / 2 - a.angle) < 0.001 ||
+                    Math.Abs(Math.PI / 4 - a.angle) < 0.001 ||
+                    Math.Abs((3*Math.PI) / 4 - a.angle) < 0.001 ||
+                    Math.Abs((5*Math.PI) / 4 - a.angle) < 0.001 ||
+                    Math.Abs((7*Math.PI) / 4 - a.angle) < 0.001
+                    )
                 .ToLookup(a => a.angle)
                 .OrderByDescending(a => a.Key)
                 .Select(a => new Queue<(int x, int y, double angle, double dist)>(a.OrderBy(b => b.dist)))
