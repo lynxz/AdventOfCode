@@ -10,7 +10,7 @@ namespace Day13
         static void Main(string[] args)
         {
             var prog = new Program();
-            //prog.FirstStar();
+            prog.FirstStar();
             prog.SecondStar();
         }
 
@@ -51,18 +51,16 @@ namespace Day13
             var data = GetData()[1].Split(',');
             var lines = Enumerable.Range(0, data.Length).Where(i => data[i] != "x").Select(i => (Line: ulong.Parse(data[i]), Index: Convert.ToUInt64(i))).ToList();
 
-            var counter = 1UL;
             var increment = 1UL;
-            foreach (var l in lines.Skip(1))
+            var result = lines.Skip(1).Aggregate(1UL, (acc, l) =>
             {
-
-                while (((lines[0].Line * counter) + l.Index) % l.Line != 0)
-                    counter += increment;
+                while (((lines[0].Line * acc) + l.Index) % l.Line != 0)
+                    acc += increment;
 
                 increment *= l.Line;
-            }
-
-            System.Console.WriteLine(counter * lines[0].Line);
+                return acc;
+            });
+            System.Console.WriteLine(result * lines[0].Line);
         }
 
 
