@@ -9,7 +9,7 @@ namespace Day18
         static void Main(string[] args)
         {
             var prog = new Program();
-            //prog.FirstStar();
+            prog.FirstStar();
             prog.SecondStar();
         }
 
