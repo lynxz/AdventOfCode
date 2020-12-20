@@ -21,7 +21,7 @@ namespace Day20
         static void Main(string[] args)
         {
             var prog = new Program();
-            //prog.FirstStar();
+            prog.FirstStar();
             prog.SecondStar();
         }
 
@@ -100,12 +100,11 @@ namespace Day20
             image = Rotate(image);
 
             var head = "                  # ";
-            var start = "                  # ".IndexOf("#");
+            var start = head.IndexOf("#");
             var length = head.Length;
             var body = new Regex("^#....##....##....###$");
             var belly = new Regex("^.#..#..#..#..#..#...$");
             var monsterCounter = 0;
-            List<(int, int)> coords = new();
             for (int i = 0; i < image.Count - 2; i++)
                 for (int j = start; j < image[0].Length - 1; j++)
                 {
@@ -115,21 +114,11 @@ namespace Day20
                         belly.Match(image[i + 2].Substring(j - start, length)).Success)
                         {
                             monsterCounter++;
-                            coords.Add((i, j));
-                            foreach (var index in new[] { 0, 5, 6, 11, 12, 17, 18, 19 })
-                            {
-                                coords.Add((i + 1, j - start + index));
-                            }
-                            foreach (var index in new[] { 1, 4, 7, 10, 13, 16 })
-                            {
-                                coords.Add((i + 1, j - start + index));
-                            }
                         }
 
                     }
                 }
                 
-            System.Console.WriteLine(coords.Count);
             System.Console.WriteLine(image.Sum(l => l.Where(c => c == '#').Count()) - monsterCounter * 15);
         }
 
