@@ -46,12 +46,10 @@ namespace Day22
                 Enumerable.Range(0,2).ToList().ForEach(i => memories[i].Add(hashes[i]));
 
                 var cards = players.Select(p => p.Dequeue()).ToArray();
-                var winner = 0;
-                if (Enumerable.Range(0, 2).All(i => players[i].Count >= cards[i]))
-                    winner = Play(players.Select((p, i) => new Queue<int>(p.Take(cards[i]))).ToArray());
-                else
-                    winner = cards[0] > cards[1] ? 0 : 1;
-
+                var winner = Enumerable.Range(0, 2).All(i => players[i].Count >= cards[i]) ?
+                    Play(players.Select((p, i) => new Queue<int>(p.Take(cards[i]))).ToArray()) : 
+                    cards[0] > cards[1] ? 0 : 1;
+                    
                 players[winner].Enqueue(cards[winner]);
                 players[winner].Enqueue(cards[(winner + 1) % 2]);
             }
