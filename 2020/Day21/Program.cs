@@ -11,7 +11,6 @@ namespace Day21
         {
             var prog = new Program();
             prog.FirstStar();
-            prog.SecondStar();
         }
 
         private void FirstStar()
