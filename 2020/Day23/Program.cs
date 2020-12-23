@@ -69,53 +69,6 @@ namespace Day23
             }
         }
 
-        private static void Iterate2(int[] data, int iterations)
-        {
-            var currentValue = data.First();
-            var tmp = new int[3];
-            var stopwatch = new Stopwatch();
-            var max = data.Max();
-            stopwatch.Start();
-            int counter = 0;
-            for (int i = 0; i < iterations; i++)
-            {
-                for (int j = 1; j < 4; j++)
-                    tmp[j - 1] = data[i];
-
-                var dest = currentValue - 1;
-                var done = false;
-                while (!done)
-                {
-                    done = true;
-                    if (dest <= 0)
-                        dest = max;
-                    if (tmp.Contains(dest))
-                    {
-                        dest--;
-                        done = false;
-                    }
-                }
-
-                var newEnd = data[0];
-                for (int j = 1; j < data.Length; j++)
-                {
-                    data[j - 1] = data[j];
-                    if (data[j - 1] == dest)
-                        for (int k = 0; k < 3; k++)
-                            data[j++] = tmp[k];
-
-
-                }
-
-
-                if (i % 100_000 == 0)
-                {
-                    System.Console.WriteLine(stopwatch.Elapsed);
-                    stopwatch.Restart();
-                }
-            }
-        }
-
         private void SecondStar()
         {
             var data = GetData();
