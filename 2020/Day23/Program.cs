@@ -69,6 +69,51 @@ namespace Day23
             }
         }
 
+        private static void Iterate2(LinkedList<int> data, int iterations)
+        {
+            var start = data.First;
+            var currentNode = start;
+            var max = data.Max();
+            var tmp = new int[3];
+            var index = new Dictionary<int, LinkedListNode<int>>();
+            do
+            {
+                index.Add(currentNode.Value, currentNode);
+                currentNode = currentNode.Next;
+            } while (currentNode != null);
+            currentNode = data.First;
+
+            for (var j = 0; j < iterations; j++)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    var nextNode = currentNode.Next == null ? data.First : currentNode.Next;
+                    tmp[i] = nextNode.Value;
+                    data.Remove(nextNode);
+                }
+                var dest = currentNode.Value - 1;
+                var done = false;
+                while (!done)
+                {
+                    done = true;
+                    if (dest <= 0)
+                        dest = max;
+                    if (tmp.Contains(dest))
+                    {
+                        dest--;
+                        done = false;
+                    }
+                }
+                var destNode = index[dest];
+                foreach (var val in tmp.Reverse())
+                {
+                    data.AddAfter(destNode, val);
+                    index[val] = destNode.Next;
+                }
+                currentNode = currentNode.Next ?? data.First;
+            }
+        }
+
         private void SecondStar()
         {
             var data = GetData();
@@ -76,12 +121,16 @@ namespace Day23
             {
                 data.Add(i);
             }
-            Iterate(data, 10_000_000);
-            var index = data.IndexOf(1);
-            System.Console.WriteLine(Convert.ToUInt64(data[(index + 1) % data.Count]) * Convert.ToUInt64(data[(index + 2) % data.Count]));
+            var newData = new LinkedList<int>(data);
+            Iterate2(newData, 10_000_000);
+            var node = newData.Find(1);
+            var nextValue = node.Next ?? newData.First;
+            var nextNextValue = nextValue.Next ?? newData.First;
+            System.Console.WriteLine(Convert.ToUInt64(nextValue.Value) * Convert.ToUInt64(nextNextValue.Value));
         }
 
         List<int> GetData() => "198753462".Select(c => int.Parse(c.ToString())).ToList();
 
     }
+
 }
