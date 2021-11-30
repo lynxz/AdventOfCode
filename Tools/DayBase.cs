@@ -1,7 +1,4 @@
-﻿using System.IO;
-using System.Net;
-
-namespace Tools
+﻿namespace Tools
 {
     public abstract class DayBase
     {
