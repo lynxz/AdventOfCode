@@ -126,40 +126,123 @@ namespace Day17
             }
             System.Console.WriteLine(string.Join(",", moves.Select(m => $"{m.turn},{m.steps}")));
 
-            var count = 0;
-            var moveGroups = new List<List<(char turn, int steps)>>();
-            while (moveGroups.Count < 3)
+            var compressed = Compress(string.Join(",", moves.Select(m => $"{m.turn},{m.steps}")).Split(',').ToList());
+
+            var input =
+                compressed.Seq.Select(x => (long)x).Append(10)
+                .Concat(compressed.A.Select(x => (long)x)).Append(10)
+                .Concat(compressed.B.Select(x => (long)x)).Append(10)
+                .Concat(compressed.C.Select(x => (long)x)).Append(10)
+                .Append((long)'n').Append(10)
+                .ToArray();
+
+            var ops = GetData();
+            ops[0] = 2;
+            long dust = 0;
+            var i = 0;
+
+            var computer = new IntComputer(ops, () => input[i++], c => dust = c);
+            computer.RunProgram();
+
+            System.Console.WriteLine(dust);
+        }
+
+        (string A, string B, string C, string Seq) Compress(List<string> sequence)
+        {
+            var fullSequence = string.Join(',', sequence);
+            for (int aLength = 10; aLength >= 2; aLength -= 2)
             {
-                foreach (var group in moveGroups)
+                var aSeq = string.Join(',', sequence.Take(aLength));
+
+                if (aSeq.Length > 20)
+                    continue;
+
+                int nextIndexA = aSeq.Length + 1;
+                int aCount = 1;
+                while (fullSequence.Substring(nextIndexA, aSeq.Length) == aSeq)
                 {
-                    if (Enumerable.Range(0, group.Count).All(j => group[j] == moves[count + j]))
-                    {
-                        count += group.Count;
-                    }
+                    nextIndexA += aSeq.Length + 1;
+                    aCount++;
                 }
-                var subList = new List<(char turn, int steps)>();
-                var matches = 0;
-                do
+
+                for (int bLength = 10; bLength >= 2; bLength -= 2)
                 {
-                    subList.Add(moves[count]);
-                    count++;
-                    matches = 0;
-                    for (int i = count; i < moves.Count - subList.Count; i++)
+                    var bSeq = string.Join(',', sequence.Skip(aLength * aCount).Take(bLength));
+
+                    if (bSeq.Length > 20)
+                        continue;
+
+                    int nextIndexB = nextIndexA + bSeq.Length + 1;
+                    int bCount = 1;
+                    int abCount = 0;
+                    bool match = true;
+
+                    while (match)
                     {
-                        if (Enumerable.Range(0, subList.Count).All(j => subList[j] == moves[i + j]))
+                        match = false;
+                        if (fullSequence.Substring(nextIndexB, aSeq.Length) == aSeq)
                         {
-                            matches++;
+                            match = true;
+                            nextIndexB += aSeq.Length + 1;
+                            abCount++;
+                        }
+
+                        if (fullSequence.Substring(nextIndexB, bSeq.Length) == bSeq)
+                        {
+                            match = true;
+                            nextIndexB += bSeq.Length + 1;
+                            bCount++;
                         }
                     }
-                } while (matches > 0);
-                var itemToRemove = subList.Last();
-                subList.Remove(itemToRemove);
-                count--;
-                moveGroups.Add(subList);
+
+                    for (int cLength = 10; cLength >= 2; cLength -= 2)
+                    {
+                        var cSeq = string.Join(',', sequence.Skip(aLength * (aCount + abCount) + bLength * bCount).Take(cLength));
+
+                        if (cSeq.Length > 20)
+                            continue;
+
+                        var seq = GetSeq(aSeq, bSeq, cSeq, fullSequence);
+
+                        if (seq != null)
+                            return (aSeq, bSeq, cSeq, seq);
+                    }
+                }
             }
 
+            throw new Exception();
+        }
 
+        private string GetSeq(string aSeq, string bSeq, string cSeq, string fullSequence)
+        {
+            var index = 0;
+            var output = new List<string>();
 
+            while (index < fullSequence.Length)
+            {
+                if (index + aSeq.Length <= fullSequence.Length && fullSequence.Substring(index, aSeq.Length) == aSeq)
+                {
+                    index += aSeq.Length + 1;
+                    output.Add("A");
+                }
+                else if (index + bSeq.Length <= fullSequence.Length && fullSequence.Substring(index, bSeq.Length) == bSeq)
+                {
+                    index += bSeq.Length + 1;
+                    output.Add("B");
+                }
+                else if (index + cSeq.Length <= fullSequence.Length && fullSequence.Substring(index, cSeq.Length) == cSeq)
+                {
+                    index += cSeq.Length + 1;
+                    output.Add("C");
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
+            var returnString = string.Join(',', output);
+            return returnString.Length <= 20 ? returnString : null;
         }
 
         char GetTurn(Direction currentDirection, Direction nextDirection)
