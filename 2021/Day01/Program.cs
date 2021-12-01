@@ -2,7 +2,7 @@
 using Tools;
 
 var day = new Day1();
-day.OutputSecondStar();
+day.OutputFirstStar();
 
 public class Day1 : DayBase
 {
@@ -14,12 +14,12 @@ public class Day1 : DayBase
     public override string FirstStar()
     {
         var input = GetIntRowData();
-        return Enumerable.Range(0, input.Length-1).Count( i => input[i] < input[i+1]).ToString();
+        return input.Window(2).Count(d => d[0] < d[1]).ToString();
     }
 
     public override string SecondStar()
     {
         var input = GetIntRowData();
-        return Enumerable.Range(0, input.Length-3).Count( i => input.Skip(i).Take(3).Sum() < input.Skip(i+1).Take(3).Sum()).ToString();
+        return input.Window(3).Select(d => d.Sum()).Window(2).Count(d => d[0] < d[1]).ToString();
     }
 }
