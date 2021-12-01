@@ -28,6 +28,9 @@
         protected string[] GetRowData() =>
             GetData(s => s.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries));
 
+        protected int[] GetIntRowData() =>
+            GetRowData().Select(r => int.Parse(r)).ToArray();
+
         protected T GetData<T>(Func<string, T> processor) =>
             processor(GetAllInput().GetAwaiter().GetResult());
 
