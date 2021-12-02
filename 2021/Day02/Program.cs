@@ -2,7 +2,7 @@
 using Tools;
 
 var day = new Day2("2");
-day.PostSecondStar();
+day.OutputSecondStar();
 
 public class Day2 : DayBase
 {
@@ -13,40 +13,20 @@ public class Day2 : DayBase
     public override string FirstStar()
     {
         var input = GetRowData().Select(d => d.Split(' ')).Select(p => (Command: p[0], Step: int.Parse(p[1]))).ToList();
-        var depth = 0;
-        var pos = 0;
-        foreach (var i in input)
-        {
-            if (i.Command == "forward")
-                pos += i.Step;
-            else if (i.Command == "up")
-                depth -= i.Step;
-            else
-                depth += i.Step;
-        }
-
-        return (depth * pos).ToString();
+        var res = input.GroupBy(d => d.Command).ToDictionary(g => g.Key, g => g.Sum(x => x.Step));
+        return ((res["down"] - res["up"]) * res["forward"]).ToString();
     }
 
     public override string SecondStar()
     {
         var input = GetRowData().Select(d => d.Split(' ')).Select(p => (Command: p[0], Step: int.Parse(p[1]))).ToList();
-        var depth = 0;
-        var pos = 0;
-        var aim = 0;
-        foreach (var i in input)
-        {
-            if (i.Command == "forward")
+        (int depth, int pos, int aim) = input.Aggregate((Depth: 0, Pos: 0, Aim: 0), (p, m) =>
+            m.Command switch 
             {
-                pos += i.Step;
-                depth += aim * i.Step;
-            }
-
-            else if (i.Command == "up")
-                aim -= i.Step;
-            else
-                aim += i.Step;
-        }
+                "forward" => (p.Depth + (p.Aim * m.Step), p.Pos + m.Step, p.Aim),
+                "down" => (p.Depth, p.Pos, p.Aim + m.Step),
+                "up" => (p.Depth, p.Pos, p.Aim - m.Step)
+            });
 
         return (depth * pos).ToString();
     }
