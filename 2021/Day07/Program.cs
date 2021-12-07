@@ -2,7 +2,7 @@
 using Tools;
 
 var day = new Day7("7");
-day.PostFirstStar();
+day.OutputSecondStar();
 
 public class Day7 : DayBase
 {
@@ -12,11 +12,18 @@ public class Day7 : DayBase
 
     public override string FirstStar()
     {
-        throw new NotImplementedException();
+        var input = GetRawData().Split(',', StringSplitOptions.RemoveEmptyEntries).Select(i => int.Parse(i)).ToList();
+        var max = input.Max();
+        var min = input.Min();
+        return Enumerable.Range(min, max - min).Min(i => input.Sum(p => Math.Abs(i - p))).ToString();
+
     }
 
     public override string SecondStar()
     {
-        throw new NotImplementedException();
+        var input = GetRawData().Split(',', StringSplitOptions.RemoveEmptyEntries).Select(i => int.Parse(i)).ToList();
+        var max = input.Max();
+        var min = input.Min();
+        return Enumerable.Range(min, max - min).Min(i => input.Sum(p => Math.Abs(i - p) * (Math.Abs(i - p) + 1) / 2)).ToString();
     }
 }
