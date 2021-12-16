@@ -14,16 +14,14 @@ public class Day16 : DayBase
     public override string FirstStar()
     {
         var binString = GetBinaryString();
-        var index = 0;
-        var package = ParsePackage(binString, ref index);
+        var package = Package.Parse(binString);
         return package.GetVersionValue().ToString();
     }
 
     public override string SecondStar()
     {
         var binString = GetBinaryString();
-        var index = 0;
-        var package = ParsePackage(binString, ref index);
+        var package = Package.Parse(binString);
         return package.GetValue().ToString();
     }
 
@@ -49,51 +47,6 @@ public class Day16 : DayBase
         };
         var input = GetRawData().Trim();
         return string.Join("", input.Select(c => hex[c]));
-    }
-
-    private static Package ParsePackage(string binString, ref int index)
-    {
-        var package = new Package
-        {
-            Version = Convert.ToInt32(binString.Substring(index, 3), 2),
-            TypeId = Convert.ToInt32(binString.Substring(index + 3, 3), 2)
-        };
-        index += 6;
-        switch (package.TypeId)
-        {
-            case 4:
-                var valString = string.Empty;
-                StringBuilder sb = new();
-                do
-                {
-                    valString = binString.Substring(index, 5);
-                    index += 5;
-                    sb.Append(valString.Substring(1));
-                } while (valString.First() == '1');
-                package.Value = Convert.ToInt64(sb.ToString(), 2);
-                return package;
-            default:
-                if (binString[index++] == '0')
-                {
-                    var len = Convert.ToInt32(binString.Substring(index, 15), 2);
-                    index += 15;
-                    var subPackages = binString.Substring(index, len);
-                    index += len;
-                    int newIndexLen = 0;
-                    while (newIndexLen < len)
-                        package.SubPackages.Add(ParsePackage(subPackages, ref newIndexLen));
-                }
-                else
-                {
-                    var noOfPackages = Convert.ToInt32(binString.Substring(index, 11), 2);
-                    index += 11;
-                    for (int i = 0; i < noOfPackages; i++)
-                        package.SubPackages.Add(ParsePackage(binString, ref index));
-                }
-                return package;
-        }
-
-        throw new Exception();
     }
 }
 
@@ -135,4 +88,64 @@ public class Package
         throw new Exception();
     }
 
+    static public Package Parse(string binString)
+    {
+        int index = 0;
+        return Package.Parse(binString, ref index);
+    }
+
+    static private Package Parse(string binString, ref int index) {
+        Package package = new();
+        package.InternalParsing(binString, ref index);
+        return package;
+    }
+
+    private void InternalParsing(string binString, ref int index)
+    {
+
+        Version = Convert.ToInt32(binString.Substring(index, 3), 2);
+        TypeId = Convert.ToInt32(binString.Substring(index + 3, 3), 2);
+
+        index += 6;
+
+        if (TypeId == 4)
+            index = ParseValue(binString, index);
+        else
+            index = binString[index++] == '0' ? ParseBitLengthOperator(binString, index) : ParseNumberOfOperator(binString, index);
+    }
+
+    private int ParseNumberOfOperator(string binString, int index)
+    {
+        var noOfPackages = Convert.ToInt32(binString.Substring(index, 11), 2);
+        index += 11;
+        SubPackages.AddRange(Enumerable.Range(0, noOfPackages).Select(i => Package.Parse(binString, ref index)));
+        return index;
+    }
+
+    private int ParseBitLengthOperator(string binString, int index)
+    {
+        var len = Convert.ToInt32(binString.Substring(index, 15), 2);
+        index += 15;
+        var subPackages = binString.Substring(index, len);
+        index += len;
+        int newIndexLen = 0;
+        while (newIndexLen < len)
+            SubPackages.Add(Package.Parse(subPackages, ref newIndexLen));
+
+        return index;
+    }
+
+    private int ParseValue(string binString, int index)
+    {
+        var valString = string.Empty;
+        StringBuilder sb = new();
+        do
+        {
+            valString = binString.Substring(index, 5);
+            index += 5;
+            sb.Append(valString.Substring(1));
+        } while (valString.First() == '1');
+        Value = Convert.ToInt64(sb.ToString(), 2);
+        return index;
+    }
 }
