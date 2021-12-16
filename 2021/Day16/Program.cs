@@ -25,29 +25,9 @@ public class Day16 : DayBase
         return package.GetValue().ToString();
     }
 
-    private string GetBinaryString()
-    {
-        var hex = new Dictionary<char, string>{
-            {'0', "0000"},
-            {'1', "0001"},
-            {'2', "0010"},
-            {'3', "0011"},
-            {'4', "0100"},
-            {'5', "0101"},
-            {'6', "0110"},
-            {'7', "0111"},
-            {'8', "1000"},
-            {'9', "1001"},
-            {'A', "1010"},
-            {'B', "1011"},
-            {'C', "1100"},
-            {'D', "1101"},
-            {'E', "1110"},
-            {'F', "1111"}
-        };
-        var input = GetRawData().Trim();
-        return string.Join("", input.Select(c => hex[c]));
-    }
+    private string GetBinaryString() =>
+        string.Join("", GetRawData().Trim().Select(c => Convert.ToString(Convert.ToInt64(c.ToString(), 16), 2).PadLeft(4, '0')));
+
 }
 
 public class Package
@@ -63,30 +43,18 @@ public class Package
 
     public int GetVersionValue() => Version + SubPackages.Sum(p => p.GetVersionValue());
 
-    public long GetValue()
-    {
-        switch (TypeId)
+    public long GetValue() =>
+        TypeId switch
         {
-            case 0:
-                return SubPackages.Sum(p => p.GetValue());
-            case 1:
-                return SubPackages.Aggregate(1L, (acc, p) => acc * p.GetValue());
-            case 2:
-                return SubPackages.Min(p => p.GetValue());
-            case 3:
-                return SubPackages.Max(p => p.GetValue());
-            case 4:
-                return Value;
-            case 5:
-                return SubPackages[0].GetValue() > SubPackages[1].GetValue() ? 1L : 0L;
-            case 6:
-                return SubPackages[0].GetValue() < SubPackages[1].GetValue() ? 1L : 0L;
-            case 7:
-                return SubPackages[0].GetValue() == SubPackages[1].GetValue() ? 1L : 0L;
-        }
-
-        throw new Exception();
-    }
+            0 => SubPackages.Sum(p => p.GetValue()),
+            1 => SubPackages.Aggregate(1L, (acc, p) => acc * p.GetValue()),
+            2 => SubPackages.Min(p => p.GetValue()),
+            3 => SubPackages.Max(p => p.GetValue()),
+            4 => Value,
+            5 => SubPackages[0].GetValue() > SubPackages[1].GetValue() ? 1L : 0L,
+            6 => SubPackages[0].GetValue() < SubPackages[1].GetValue() ? 1L : 0L,
+            7 => SubPackages[0].GetValue() == SubPackages[1].GetValue() ? 1L : 0L
+        };
 
     static public Package Parse(string binString)
     {
@@ -94,7 +62,8 @@ public class Package
         return Package.Parse(binString, ref index);
     }
 
-    static private Package Parse(string binString, ref int index) {
+    static private Package Parse(string binString, ref int index)
+    {
         Package package = new();
         package.InternalParsing(binString, ref index);
         return package;
@@ -102,10 +71,8 @@ public class Package
 
     private void InternalParsing(string binString, ref int index)
     {
-
-        Version = Convert.ToInt32(binString.Substring(index, 3), 2);
-        TypeId = Convert.ToInt32(binString.Substring(index + 3, 3), 2);
-
+        Version = Convert.ToInt32(binString[index..(index + 3)], 2);
+        TypeId = Convert.ToInt32(binString[(index + 3)..(index + 6)], 2);
         index += 6;
 
         if (TypeId == 4)
@@ -116,7 +83,7 @@ public class Package
 
     private int ParseNumberOfOperator(string binString, int index)
     {
-        var noOfPackages = Convert.ToInt32(binString.Substring(index, 11), 2);
+        var noOfPackages = Convert.ToInt32(binString[index..(index + 11)], 2);
         index += 11;
         SubPackages.AddRange(Enumerable.Range(0, noOfPackages).Select(i => Package.Parse(binString, ref index)));
         return index;
@@ -124,10 +91,10 @@ public class Package
 
     private int ParseBitLengthOperator(string binString, int index)
     {
-        var len = Convert.ToInt32(binString.Substring(index, 15), 2);
-        index += 15;
-        var subPackages = binString.Substring(index, len);
-        index += len;
+        var len = Convert.ToInt32(binString[index..(index + 15)], 2);
+        var subPackages = binString[(index + 15)..(index + len + 15)];
+        index += (len + 15);
+
         int newIndexLen = 0;
         while (newIndexLen < len)
             SubPackages.Add(Package.Parse(subPackages, ref newIndexLen));
@@ -137,14 +104,12 @@ public class Package
 
     private int ParseValue(string binString, int index)
     {
-        var valString = string.Empty;
         StringBuilder sb = new();
         do
         {
-            valString = binString.Substring(index, 5);
+            sb.Append(binString[(index + 1)..(index + 5)]);
             index += 5;
-            sb.Append(valString.Substring(1));
-        } while (valString.First() == '1');
+        } while (binString[index - 5] == '1');
         Value = Convert.ToInt64(sb.ToString(), 2);
         return index;
     }
