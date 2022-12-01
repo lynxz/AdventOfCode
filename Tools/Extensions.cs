@@ -4,7 +4,7 @@ namespace Tools
 {
     public static class Extensions
     {
-        static Regex _integerRegex = new Regex(@"-?\d+");
+        static readonly Regex _integerRegex = new(@"-?\d+");
 
         public static int[] GetIntegers(this string data) =>
             _integerRegex.Matches(data).Select(m => int.Parse(m.Value)).ToArray();
@@ -39,5 +39,10 @@ namespace Tools
             }
         }
 
+        public static CustomIntEnumerator GetEnumerator(this Range range) =>
+            new(range);
+
+        public static CustomIntEnumerator GetEnumerator(this int number ) =>
+            new(new Range(0, number));
     }
 }

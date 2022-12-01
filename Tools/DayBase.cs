@@ -6,7 +6,7 @@
         private readonly HttpClient _httpClient;
         private readonly string _year;
 
-        public DayBase(string day)
+        protected DayBase(string day)
         {
             var cookie = $"session={File.ReadAllText("../cookie")}";
             _httpClient = new HttpClient { BaseAddress = new Uri("https://adventofcode.com") };
@@ -36,24 +36,21 @@
 
         private async Task<string> GetAllInput()
         {
-
             if (File.Exists(DATA_FILE))
                 return await File.ReadAllTextAsync(DATA_FILE);
 
             var request = new HttpRequestMessage(HttpMethod.Get, $"{_year}/day/{Day}/input");
 
-            using (var response = await _httpClient.SendAsync(request))
+            using var response = await _httpClient.SendAsync(request);
+            if (response.IsSuccessStatusCode)
             {
-                if (response.IsSuccessStatusCode)
-                {
-                    var data = await response.Content.ReadAsStringAsync();
-                    await File.WriteAllTextAsync(DATA_FILE, data);
-                    return data;
-                }
-                else
-                {
-                    throw new Exception($"Could not fetch data Status Code {response.StatusCode}, {response.ReasonPhrase}");
-                }
+                var data = await response.Content.ReadAsStringAsync();
+                await File.WriteAllTextAsync(DATA_FILE, data);
+                return data;
+            }
+            else
+            {
+                throw new Exception($"Could not fetch data Status Code {response.StatusCode}, {response.ReasonPhrase}");
             }
         }
 
