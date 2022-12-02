@@ -1,7 +1,7 @@
 ﻿using Tools;
 
 var day = new Day1();
-day.PostSecondStar();
+day.OutputSecondStar();
 
 public class Day1 : DayBase
 {
@@ -12,24 +12,20 @@ public class Day1 : DayBase
     public override string FirstStar()
     {
         var data = GetRawData();
-        var elves = data.Split("\n\n", StringSplitOptions.RemoveEmptyEntries);
-        var max = elves.Max(e =>
-            e.Split("\n", StringSplitOptions.RemoveEmptyEntries)
-            .Select(d => int.Parse(d))
-            .Sum());
-        return max.ToString();
+        IEnumerable<int> elves = GetElves(data);
+        return elves.Max().ToString();
     }
 
     public override string SecondStar()
     {
         var data = GetRawData();
-        var elves = data.Split("\n\n", StringSplitOptions.RemoveEmptyEntries).ToList();
-        var order = elves.Select(e => 
+        var elves = GetElves(data);
+        return elves.OrderDescending().Take(3).Sum().ToString();
+    }
+
+    private static IEnumerable<int> GetElves(string data) =>
+        data.Split("\n\n", StringSplitOptions.RemoveEmptyEntries).Select(e =>
             e.Split("\n", StringSplitOptions.RemoveEmptyEntries)
             .Select(d => int.Parse(d))
-            .Sum())
-            .OrderDescending()
-            .ToList();
-        return order.Take(3).Sum().ToString();
-    }
+            .Sum());
 }
