@@ -40,6 +40,7 @@
                 return await File.ReadAllTextAsync(DATA_FILE);
 
             var request = new HttpRequestMessage(HttpMethod.Get, $"{_year}/day/{Day}/input");
+            request.Headers.UserAgent.ParseAdd(".NET/7.0 (+via https://github.com/lynxz/AdventOfCode by anders.stroemberg@gmail.com)");
 
             using var response = await _httpClient.SendAsync(request);
             if (response.IsSuccessStatusCode)
