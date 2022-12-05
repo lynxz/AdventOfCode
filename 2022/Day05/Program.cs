@@ -10,7 +10,7 @@ public class Day05 : DayBase
     {
     }
     public override string FirstStar() =>
-     Crane(true);
+        Crane(true);
 
     private string Crane(bool reverse)
     {
