@@ -19,6 +19,6 @@ public class Day04 : DayBase
     public override string SecondStar()
     {
         var data = GetRowData().Select(r => r.Replace('-', ' ').GetIntegers());
-        return data.Count(g => Enumerable.Range(g[0], g[1]-g[0]+1).Any(i => i >= g[2] && i <= g[3])).ToString();
+        return data.Count(g => Enumerable.Range(g[0], g[1] - g[0] + 1).Any(i => i >= g[2] && i <= g[3])).ToString();
     }
 }
