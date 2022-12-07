@@ -14,7 +14,7 @@ public class Day06 : DayBase
 
     public override string SecondStar() =>
         GetPacket(14).ToString();
-    
+
     private int GetPacket(int size)
     {
         var data = GetRawData().Window(size).ToList();
