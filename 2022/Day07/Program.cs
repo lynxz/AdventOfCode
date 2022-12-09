@@ -11,21 +11,21 @@ public class Day07 : DayBase
     }
     public override string FirstStar()
     {
-        Node root = BuildDirectory();
+        Node<int> root = BuildDirectory();
         return SumSmallDir(root, 0).ToString();
     }
 
     public override string SecondStar()
     {
         var root = BuildDirectory();
-        var limit = 30000000 - (70000000 - root.Size);
-        return FindDir(root, limit, root).Size.ToString();
+        var limit = 30000000 - (70000000 - root.Data);
+        return FindDir(root, limit, root).Data.ToString();
     }
 
-    private Node BuildDirectory()
+    private Node<int> BuildDirectory()
     {
         var data = GetRowData() ?? Array.Empty<string>();
-        var root = new Node("/", 0, null, new List<Node>());
+        var root = new Node<int>("/", 0, null, new List<Node<int>>());
         var current = root;
 
         foreach (var l in data.Skip(1))
@@ -36,23 +36,22 @@ public class Day07 : DayBase
             }
             else if (l.StartsWith("$ cd"))
             {
-                var dir = l.Substring(5);
-                current = current?.Children?.FirstOrDefault(n => n.Name == dir);
+                current = current?.Children?.FirstOrDefault(n => n.Name == l[5..]);
             }
             else if (l.StartsWith("dir"))
             {
-                var dir = l.Substring(4);
-                Node? node = current?.Children?.FirstOrDefault(n => n.Name == dir);
+                var dir = l[4..];
+                Node<int>? node = current?.Children?.FirstOrDefault(n => n.Name == dir);
                 if (node == null)
                 {
-                    node = new Node(dir, 0, current, new List<Node>());
+                    node = new Node<int>(dir, 0, current, new List<Node<int>>());
                     current?.Children?.Add(node);
                 }
             }
             else if (char.IsNumber(l[0]))
             {
                 var parts = l.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                var node = new Node(parts[1], int.Parse(parts[0]), current, null);
+                var node = new Node<int>(parts[1], int.Parse(parts[0]), current, null);
                 current?.Children?.Add(node);
             }
         }
@@ -62,7 +61,7 @@ public class Day07 : DayBase
         return root;
     }
 
-    private void CalculateDirSize(Node? node)
+    private void CalculateDirSize(Node<int>? node)
     {
         if (node?.Children == null)
             return;
@@ -73,12 +72,12 @@ public class Day07 : DayBase
             {
                 CalculateDirSize(child);
             }
-            size += child.Size;
+            size += child.Data;
         }
-        node.Size = size;
+        node.Data = size;
     }
 
-    private int SumSmallDir(Node node, int current)
+    private int SumSmallDir(Node<int> node, int current)
     {
         if (node?.Children == null)
             return current;
@@ -86,38 +85,19 @@ public class Day07 : DayBase
         foreach (var child in node.Children)
             current = SumSmallDir(child, current);
 
-        return node.Size <= 100000 ? node.Size + current : current;
+        return node.Data <= 100000 ? node.Data + current : current;
     }
 
-
-    private Node FindDir(Node node, int limit, Node contender)
+    private Node<int> FindDir(Node<int> node, int limit, Node<int> contender)
     {
         if (node.Children == null)
-        {
             return contender;
-        }
-        if (node.Size >= limit && node.Size < contender.Size)
+        if (node.Data >= limit && node.Data < contender.Data)
             contender = node;
+
         foreach (var child in node.Children)
-        {
             contender = FindDir(child, limit, contender);
-        }
+        
         return contender;
     }
-}
-
-public class Node
-{
-    public Node(string name, int size, Node? parent, List<Node>? children)
-    {
-        Name = name;
-        Size = size;
-        Parent = parent;
-        Children = children;
-    }
-
-    public string Name { get; set; }
-    public int Size { get; set; }
-    public Node? Parent { get; set; }
-    public List<Node>? Children { get; set; }
 }

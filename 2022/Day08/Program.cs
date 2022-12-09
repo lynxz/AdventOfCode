@@ -11,8 +11,7 @@ public class Day08 : DayBase
     }
     public override string FirstStar()
     {
-        var data = GetRowData().Select(r => r.Select(n => int.Parse(n.ToString())));
-        var trees = data.ToMultidimensionalArray();
+        var trees = GetRowData().Select(r => r.Select(n => int.Parse(n.ToString()))).ToMultidimensionalArray() ?? new int[0,0];
         var width = trees.GetLength(0);
         var height = trees.GetLength(1);
         var invisible = 0;
@@ -37,8 +36,7 @@ public class Day08 : DayBase
 
     public override string SecondStar()
     {
-        var data = GetRowData().Select(r => r.Select(n => int.Parse(n.ToString())));
-        var trees = data.ToMultidimensionalArray();
+        var trees = GetRowData().Select(r => r.Select(n => int.Parse(n.ToString()))).ToMultidimensionalArray() ?? new int[0,0];
         var width = trees.GetLength(0);
         var height = trees.GetLength(1);
         var max = 0;
