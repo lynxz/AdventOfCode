@@ -1,52 +1,35 @@
 ﻿using Tools;
 
 Day10 day = new();
+day.OutputFirstStar();
 day.OutputSecondStar();
 
 public class Day10 : DayBase
 {
     public Day10() : base("10")
     {
-
     }
 
     public override string FirstStar()
     {
         var data = GetRowData();
         var computer = new Computer(data);
-        var sum = 0;
-        while (computer.Cycle <= 220)
-        {
-            if (computer.Cycle == 20 || (computer.Cycle - 20) % 40 == 0)
-                sum += computer.Cycle * computer.X;
-
-            computer.Tick();
-        }
-        return sum.ToString();
+        var cycles = Enumerable.Range(0, 220).Select(_ => computer.Tick()).ToList();
+        return (new [] {20, 60, 100, 140, 180, 220}).Sum(i => i*cycles[i - 1]).ToString();
     }
 
     public override string SecondStar()
     {
         var data = GetRowData();
         var computer = new Computer(data);
-        var screen = Enumerable.Repeat(".", 240).ToArray();
+        var cycles = Enumerable.Range(0, 240).Select(_ => computer.Tick()).ToList();
         for (int i = 0; i < 6; i++)
         {
             for (int j = 0; j < 40; j++)
             {
-                if (computer.X + 1 >= j && computer.X - 1 <= j)
-                    screen[j + (i * 40)] = "#";
-
-                computer.Tick();
+                Console.Write(cycles[j + (i * 40)] + 1 >= j && cycles[j + (i * 40)] - 1 <= j ? "#" : ".");
             }
-        }
-        for (int i = 0; i < 6; i++)
-        {
-            for (int j = 0; j < 40; j++)
-            {
-                System.Console.Write(screen[j + (i * 40)]);
-            }
-            System.Console.WriteLine();
+            Console.WriteLine();
         }
         return string.Empty;
     }
@@ -54,9 +37,8 @@ public class Day10 : DayBase
 
 public class Computer
 {
-
     private readonly IList<string> _data;
-    private Queue<Action> _ops;
+    private readonly Queue<Action> _ops;
 
     public Computer(IList<string> data)
     {
@@ -70,8 +52,9 @@ public class Computer
 
     public int Cycle { get; private set; }
 
-    public void Tick()
+    public int Tick()
     {
+        var temp = X;
         if (_data.Count > Cycle - 1)
         {
             _ops.Enqueue(() => { });
@@ -83,5 +66,6 @@ public class Computer
         }
         _ops.Dequeue()();
         Cycle++;
+        return temp;
     }
 }
