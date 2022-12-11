@@ -46,10 +46,10 @@ public class Monkey
     private readonly List<Monkey> monkeys;
     private readonly Func<long, long> op;
     private readonly int[] receivers;
-    private static long divisorLimit = -1;
+    private readonly Lazy<long> divisorLimit;
     private readonly bool divideByThree;
 
-    public Monkey(int num, List<Monkey> monkeys, IEnumerable<long> startItems, Func<long, long> op, long divisor, int[] receivers, bool divideByThree)
+    private Monkey(int num, List<Monkey> monkeys, IEnumerable<long> startItems, Func<long, long> op, long divisor, int[] receivers, bool divideByThree)
     {
         Num = num;
         this.monkeys = monkeys;
@@ -58,6 +58,7 @@ public class Monkey
         this.receivers = receivers;
         Divisor = divisor;
         this.divideByThree = divideByThree;
+        divisorLimit = new Lazy<long>(() => monkeys.Aggregate(1L, (v, m) => m.Divisor * v));
     }
 
     public static Monkey ParseMonkey(string data, List<Monkey> monkeys, bool divideByThree = true)
@@ -85,16 +86,7 @@ public class Monkey
 
     public long Inspections { get; private set; }
 
-    public long Divisor {get;}
-
-    private long DivisorLimit {
-        get {
-            if (divisorLimit == -1) {
-                divisorLimit = monkeys.Aggregate(1L, (v, m) => m.Divisor*v);
-            }
-            return divisorLimit;
-        }
-    }
+    public long Divisor { get; }
 
     public void Turn()
     {
@@ -105,16 +97,13 @@ public class Monkey
             if (divideByThree)
                 newValue /= 3;
 
-            newValue %= DivisorLimit;
+            newValue %= divisorLimit.Value;
             Throw(receivers[Test(newValue) ? 0 : 1], newValue);
             Inspections++;
         }
     }
 
-    public void Catch(long item)
-    {
-        items.Enqueue(item);
-    }
+    public void Catch(long item) => items.Enqueue(item);
 
     private void Throw(int monkey, long item)
     {
@@ -122,5 +111,5 @@ public class Monkey
         receiver.Catch(item);
     }
 
-    private bool Test(BigInteger item) => item % Divisor == 0;
+    private bool Test(long item) => item % Divisor == 0;
 }
