@@ -1,5 +1,4 @@
-﻿using System.Numerics;
-using Tools;
+﻿using Tools;
 
 Day11 day = new();
 day.OutputFirstStar();
