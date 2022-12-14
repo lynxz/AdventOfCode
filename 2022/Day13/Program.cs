@@ -1,6 +1,7 @@
 ﻿using Tools;
 
 Day13 day = new();
+day.OutputFirstStar();
 day.OutputSecondStar();
 
 public class Day13 : DayBase

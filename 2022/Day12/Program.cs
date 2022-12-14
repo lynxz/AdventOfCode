@@ -57,6 +57,7 @@ public class Day12 : DayBase
             var u = nodes.OrderBy(n => dist[n]).First();
             if (shortPath.TryGetValue(u, out int val)) {
                 while(prev.ContainsKey(u)) {
+                    shortPath[u] = val;
                     val++;
                     u = prev[u];
                 }
