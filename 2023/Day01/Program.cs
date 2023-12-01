@@ -18,7 +18,6 @@ public class Day01 : DayBase
     public override string SecondStar()
     {
         var nums = "123456789";
-        var words = new[] { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" };
         var intMap = new Dictionary<string, int> {
             {"one", 1},
             {"two", 2},
@@ -42,7 +41,7 @@ public class Day01 : DayBase
                 }
                 else
                 {
-                    var word = words.Where(w => w.Length + i - 1 < r.Length).FirstOrDefault(w => r.Substring(i, w.Length) == w);
+                    var word = intMap.Keys.Where(w => w.Length + i - 1 < r.Length).FirstOrDefault(w => r.Substring(i, w.Length) == w);
                     if (word != null)
                     {
                         result.Add(intMap[r.Substring(i, word.Length)]);
