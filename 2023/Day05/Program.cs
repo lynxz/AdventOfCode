@@ -55,7 +55,9 @@ public class Day05 : DayBase
             i++;
         }
 
-        return "";
+        var merge = seeds.SelectMany(s => MergeRanges(ranges, 0, s.ToArray())).ToList();
+
+        return merge.Min(s => s[0]).ToString();
     }
 
     private List<long[]> MergeRanges(List<List<long[]>> ranges, int index, long[] range)
@@ -65,11 +67,31 @@ public class Day05 : DayBase
 
         foreach (var r in ranges[index])
         {
-            if ((r[1] <= range[0] && r[1] + r[2] <= range[0]) || (r[1] >= range[0] && r[1] >= range[0] + range[2]))
+            if (r[1] <= range[0] && r[1] + r[2] >= range[0] + range[1])
             {
-                range[1] = r[1];
-                return MergeRanges(ranges, index + 1, range);
+                return MergeRanges(ranges, index + 1, new[] { r[0] + (range[0] - r[1]), range[1] });
+            }
+            else if (r[1] <= range[0] && r[1] + r[2] >= range[0])
+            {
+                var merged = MergeRanges(ranges, index + 1, new[] { r[0] + (range[0] - r[1]), r[1] + r[2] - range[0] });
+                merged.AddRange(MergeRanges(ranges, index, new[] { r[1] + r[2] + 1, range[0] + range[1] - (r[1] + r[2]) }));
+                return merged;
+            }
+            else if (r[1] > range[0] && r[1] < range[0] + range[1])
+            {
+                var merged = MergeRanges(ranges, index + 1, new[] { r[0], range[0] + range[1] - r[1] });
+                merged.AddRange(MergeRanges(ranges, index, new[] { range[0], r[1] - range[0] }));
+                return merged;
+            }
+            else if (r[1] > range[0] && r[1] + r[2] < range[0] + range[1])
+            {
+                var merged = MergeRanges(ranges, index + 1, new[] { r[0], r[2] });
+                merged.AddRange(MergeRanges(ranges, index, new[] { r[1] + r[2] + 1, range[0] + range[1] - (r[1] + r[2]) }));
+                merged.AddRange(MergeRanges(ranges, index, new[] { range[0], r[1] - range[0] }));
+                return merged;
             }
         }
+
+        return MergeRanges(ranges, index + 1, range);
     }
 }
