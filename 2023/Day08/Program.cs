@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Tools;
+﻿using Tools;
 
 Day08 day = new();
 day.OutputSecondStar();
@@ -40,46 +39,46 @@ public class Day08 : DayBase
             .ToDictionary(r => r[0], r => r[1].Trim(new char[] { '(', ')' }).Split(",", StringSplitOptions.RemoveEmptyEntries).Select(n => n.Trim()).ToList());
 
         var curr = nodes.Where(n => n.Key.Last() == 'A').Select(n => n.Key).ToArray();
-        var step = 0;
 
-
-        var memo = new Dictionary<string, int>();
-        var cycles = new Dictionary<string, List<int>>();
-        foreach (var c in curr)
+        List<int> cycles = new();
+        foreach (var n in curr)
         {
-            var start = c;
-            var b = c;
-            var count = 0;
-            var currZ = "";
-            var currZStep = 0;
-            List<int> zeds = new();
-            do
+            var prevZ = string.Empty;
+            var prevS = 0;
+            var s = 0;
+            var c = n;
+            var stab = 0;
+
+            while (c != prevZ && stab < 2)
             {
-                var dir = instr[count % instr.Length] == 'L' ? 0 : 1;
-                b = nodes[b][dir];
-                count++;
-                if (b.Last() == 'Z')
+                if (c.Last() == 'Z')
                 {
-                    zeds.Add(count);
+                    prevZ = c;
+                    prevS = s;
+                    stab++;
                 }
-            } while (b != start);
-            cycles.Add(c, zeds);
+
+                var dir = instr[s % instr.Length] == 'L' ? 0 : 1;
+                s++;
+                c = nodes[c][dir];
+            }
+            cycles.Add(s - prevS);
         }
 
-        // while (!curr.All(n => n.Last() == 'Z'))
-        // {
-        //     var next = new List<string>();
-        //     var dir = instr[step % instr.Length] == 'L' ? 0 : 1;
-        //     for (int i = 0; i < curr.Length; i++)
-        //     {
-        //         var c = curr[i];
+            return LCM(cycles.Select(c => (long)c).ToArray()).ToString();
+        }
 
-        //         curr[i] = nodes[c][dir];
-        //     }
 
-        //     step++;
-        // }
-
-        return step.ToString();
+        static long LCM(long[] numbers)
+        {
+            return numbers.Aggregate(lcm);
+        }
+        static long lcm(long a, long b)
+        {
+            return Math.Abs(a * b) / GCD(a, b);
+        }
+        static long GCD(long a, long b)
+        {
+            return b == 0 ? a : GCD(b, a % b);
+        }
     }
-}
