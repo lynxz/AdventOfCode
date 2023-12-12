@@ -42,10 +42,17 @@ namespace Tools
             }
         }
 
+        public static IEnumerable<IEnumerable<T>> DifferentCombinations<T>(this IEnumerable<T> elements, int k)
+        {
+            return k == 0 ? new[] { new T[0] } :
+              elements.SelectMany((e, i) =>
+                elements.Skip(i + 1).DifferentCombinations(k - 1).Select(c => (new[] { e }).Concat(c)));
+        }
+
         public static CustomIntEnumerator GetEnumerator(this Range range) =>
             new(range);
 
-        public static CustomIntEnumerator GetEnumerator(this int number ) =>
+        public static CustomIntEnumerator GetEnumerator(this int number) =>
             new(new Range(0, number));
     }
 }
