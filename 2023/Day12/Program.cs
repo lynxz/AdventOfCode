@@ -1,8 +1,7 @@
-﻿using System.Runtime.InteropServices;
-using Tools;
+﻿using Tools;
 
 Day12 day = new();
-//day.OutputFirstStar();
+day.OutputFirstStar();
 day.OutputSecondStar();
 
 public class Day12 : DayBase
@@ -15,9 +14,6 @@ public class Day12 : DayBase
     {
         var data = GetRowData();
         var s = data.Select(r => (r.GetIntegers(), r.Split(' ', StringSplitOptions.RemoveEmptyEntries)[0])).ToList();
-
-        Enumerable.Range(0, s.Count).ToList().ForEach(i => System.Console.WriteLine($"{data[i]} {Combinations(s[i], 0, 0, new Dictionary<(int, int), long>())}"));
-
         return s.Sum(spring => Combinations(spring, 0, 0, new Dictionary<(int, int), long>())).ToString();
     }
 
@@ -25,9 +21,6 @@ public class Day12 : DayBase
     {
         var data = GetRowData();
         var s = data.Select(r => (Enumerable.Repeat(r.GetIntegers(), 5).SelectMany(x => x).ToArray(), string.Join('?', Enumerable.Repeat(r.Split(' ', StringSplitOptions.RemoveEmptyEntries)[0], 5)))).ToList();
-
-        Enumerable.Range(0, s.Count).Take(15).ToList().ForEach(i => System.Console.WriteLine($"{data[i]} {Combinations(s[i], 0, 0, new Dictionary<(int, int), long>())}"));
-
         return s.Sum(spring => (long)Combinations(spring, 0, 0, new Dictionary<(int, int), long>())).ToString();
     }
 
@@ -54,8 +47,7 @@ public class Day12 : DayBase
             }
             else
             {
-                var s2 = s.Substring(pos + offset, i[index]);
-                if (s2.All(c => c == '#' || c == '?'))
+                if (Enumerable.Range(pos + offset, i[index]).All(i => s[i] == '#' || s[i] == '?'))
                 {
                     if (pos + offset + i[index] == s.Length)
                     {
@@ -71,7 +63,6 @@ public class Day12 : DayBase
                     }
                 }
             }
-
             offset++;
         } while (offset + pos + left < s.Length && offset + pos + i[index] <= s.Length && Enumerable.Range(pos, offset).All(j => s[j] != '#'));
 
