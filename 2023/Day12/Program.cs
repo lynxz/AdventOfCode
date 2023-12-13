@@ -49,13 +49,9 @@ public class Day12 : DayBase
             {
                 if (Enumerable.Range(pos + offset, i[index]).All(i => s[i] == '#' || s[i] == '?'))
                 {
-                    if (pos + offset + i[index] == s.Length)
-                    {
-                        var combs = Combinations(spring, index + 1, pos + offset + i[index] + 1, memo);
-                        memo.Add((pos + offset, index), combs);
-                        result += combs;
-                    }
-                    else if (pos + offset + i[index] < s.Length && s[pos + offset + i[index]] != '#')
+                    if (pos + offset + i[index] == s.Length
+                            || pos + offset + i[index] < s.Length
+                            && s[pos + offset + i[index]] != '#')
                     {
                         var combs = Combinations(spring, index + 1, pos + offset + i[index] + 1, memo);
                         memo.Add((pos + offset, index), combs);
@@ -64,7 +60,9 @@ public class Day12 : DayBase
                 }
             }
             offset++;
-        } while (offset + pos + left < s.Length && offset + pos + i[index] <= s.Length && Enumerable.Range(pos, offset).All(j => s[j] != '#'));
+        } while (offset + pos + left < s.Length
+                    && offset + pos + i[index] <= s.Length
+                    && Enumerable.Range(pos, offset).All(j => s[j] != '#'));
 
         return result;
     }
