@@ -1,4 +1,5 @@
-﻿using Tools;
+﻿using System.Runtime.InteropServices;
+using Tools;
 
 Day14 day = new();
 day.OutputSecondStar();
@@ -39,19 +40,35 @@ public class Day14 : DayBase
     {
         var data = GetRowData().ToMultidimensionalArray();
 
-        for (int c =0; c < 204; c++)
+        List<int> list = new();
+        for (int c = 0; c < 500; c++)
         {
             for (int i = 0; i < 4; i++)
             {
                 data = Tilt(data, (Dir)i);
             }
 
-           var v = Enumerable.Range(0, data.GetLength(0)).Select(y => Enumerable.Range(0, data.GetLength(1)).Sum(x => (data[y, x] == 'O' ? 1 : 0) * (data.GetLength(0) - y))).Sum().ToString();
-           System.Console.WriteLine(v);
+            var v = Enumerable.Range(0, data.GetLength(0)).Select(y => Enumerable.Range(0, data.GetLength(1)).Sum(x => (data[y, x] == 'O' ? 1 : 0) * (data.GetLength(0) - y))).Sum();
+            list.Add(v);
         }
-        
-        System.Console.WriteLine("");
-        return Enumerable.Range(0, data.GetLength(0)).Select(y => Enumerable.Range(0, data.GetLength(1)).Sum(x => (data[y, x] == 'O' ? 1 : 0) * (data.GetLength(0) - y))).Sum().ToString();
+
+        var max = Enumerable.Range(0, list.Count).Where(i => list[i] == list[100]).Window(2).Select(v => v[1] - v[0]).Skip(2).Distinct().Sum();
+        List<KeyValuePair<int, int[]>> cadence = new();
+        for (int j = 0; j < max; j++)
+        {
+            var diffs = Enumerable.Range(0, list.Count).Where(i => list[i] == list[100 + j]).Window(2).Select(v => v[1] - v[0]);
+            cadence.Add(new KeyValuePair<int, int[]>(list[100 + j], diffs.Distinct().ToArray()));
+        }
+
+        // var cycles = 1000_000_000-1;
+        // var result = 0;
+        // foreach(var kvp in cadence) {
+        //     var check = (cycles - list.IndexOf(kvp.Key)) % max;
+        //     if (check == 0) {
+        //         result = kvp.Key;
+        //     }
+        // }
+        return cadence.First(kvp => (999999999 - list.IndexOf(kvp.Key)) % max == 0).Key.ToString();
     }
 
     private static char[,]? Tilt(char[,]? data, Dir dir = Dir.North)
@@ -80,7 +97,7 @@ public class Day14 : DayBase
         {
             for (int y = 0; y < data.GetLength(0); y++)
             {
-                for (int x = data.GetLength(1) -1; x >= 0; x--)
+                for (int x = data.GetLength(1) - 1; x >= 0; x--)
                 {
                     if (data[y, x] == 'O')
                     {
@@ -96,13 +113,13 @@ public class Day14 : DayBase
         }
         else if (dir == Dir.South)
         {
-            for (int y = data.GetLength(0)-1; y  >= 0; y--)
+            for (int y = data.GetLength(0) - 1; y >= 0; y--)
             {
                 for (int x = 0; x < data.GetLength(1); x++)
                 {
                     if (data[y, x] == 'O')
                     {
-                       var yOffset = 0;
+                        var yOffset = 0;
                         while (y + yOffset + 1 < data.GetLength(0) && tilted[y + yOffset + 1, x] != 'O' && tilted[y + yOffset + 1, x] != '#')
                         {
                             yOffset++;
@@ -111,7 +128,9 @@ public class Day14 : DayBase
                     }
                 }
             }
-        } else {
+        }
+        else
+        {
             for (int y = 0; y < data.GetLength(0); y++)
             {
                 for (int x = 0; x < data.GetLength(1); x++)
