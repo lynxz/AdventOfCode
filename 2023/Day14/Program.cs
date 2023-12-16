@@ -1,7 +1,7 @@
-﻿using System.Runtime.InteropServices;
-using Tools;
+﻿using Tools;
 
 Day14 day = new();
+day.OutputFirstStar();
 day.OutputSecondStar();
 
 public class Day14 : DayBase
@@ -30,7 +30,6 @@ public class Day14 : DayBase
                 }
             }
         }
-        //tilted.Print();
 
         return Enumerable.Range(0, data.GetLength(0)).Select(y => Enumerable.Range(0, data.GetLength(1)).Sum(x => (tilted[y, x] == 'O' ? 1 : 0) * (tilted.GetLength(0) - y))).Sum().ToString();
 
@@ -60,14 +59,6 @@ public class Day14 : DayBase
             cadence.Add(new KeyValuePair<int, int[]>(list[100 + j], diffs.Distinct().ToArray()));
         }
 
-        // var cycles = 1000_000_000-1;
-        // var result = 0;
-        // foreach(var kvp in cadence) {
-        //     var check = (cycles - list.IndexOf(kvp.Key)) % max;
-        //     if (check == 0) {
-        //         result = kvp.Key;
-        //     }
-        // }
         return cadence.First(kvp => (999999999 - list.IndexOf(kvp.Key)) % max == 0).Key.ToString();
     }
 
