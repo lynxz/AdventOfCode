@@ -157,7 +157,62 @@ public class Day18 : DayBase
             }
         }
 
-        // var sum = 0L;
+        var sum = 0L;
+
+        var vs = new Stack<(int Start, int End, int X)>();
+        var hs = new Stack<(int Start, int End, int Y)>();
+        var index = verticalRanges.IndexOf(verticalRanges.First(r => r.X == minX));
+        vs.Push(verticalRanges[index]);
+
+        while (vs.Count > 0)
+        {
+            hs.Push(horizontalRanges[index]);
+            index = (index + 1) % verticalRanges.Count;
+            var range = verticalRanges[index];
+            var pr = 0;
+            var hr = 0L;
+
+            if (range.Start < range.End)
+            {
+                vs.Push(range);
+            }
+            else
+            {
+                var prevRange = vs.Pop();
+                var prevH = hs.Pop();
+                var rs = Math.Min(prevRange.SizeOfRange(), range.SizeOfRange());
+
+                while (rs != 0)
+                {
+                    
+                    if (prevH.Start > prevH.End)
+                    {
+                        sum += prevH.SizeOfRange();
+                        hr -= prevH.SizeOfRange() + 1;
+                    }
+                    else if (prevH.Start < prevH.End)
+                    {
+                       hr += prevH.SizeOfRange() + 1;
+                        sum += hr;
+                    }
+                    
+
+                    sum += rs * hr;
+
+                    if (rs < prevRange.SizeOfRange())
+                    {
+                        prevRange = (prevRange.Start, prevRange.End + (int)rs, prevRange.X);
+                        prevH = (prevRange.X, prevRange.X, prevH.Y);
+                    } else {
+                        // Fix this
+                    }
+                }
+
+
+            }
+
+        }
+
 
         // var rightIndex = verticalRanges.IndexOf(verticalRanges.First(r => r.Start == minY + 1));
         // var leftIndex = verticalRanges.IndexOf(verticalRanges.First(r => r.End == minY));
@@ -177,7 +232,7 @@ public class Day18 : DayBase
         //     pl.Start = pr.Start;
         // }
 
-        return "";
+        return sum.ToString();
 
     }
 
@@ -185,7 +240,7 @@ public class Day18 : DayBase
     {
         if (minX >= maxX)
             return 0;
-        if (minY >= maxY) 
+        if (minY >= maxY)
             return 0;
         if (verticalRanges.Count == 0 && horizontalRanges.Count == 0)
         {
@@ -268,6 +323,6 @@ public class Day18 : DayBase
 public static class Extensions
 {
 
-    public static long SizeOfRange(this (int Start, int End) range) => Math.Abs(range.End - range.Start) + 1;
+    public static long SizeOfRange(this (int Start, int End, int B) range) => Math.Abs(range.End - range.Start) + 1;
 
 }
