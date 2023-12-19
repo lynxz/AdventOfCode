@@ -2,7 +2,7 @@
 using Tools;
 
 Day19 day = new();
-day.OutputFirstStar();
+day.OutputSecondStar();
 
 public class Day19 : DayBase
 {
@@ -58,7 +58,8 @@ public class Day19 : DayBase
                 }
             }
 
-            Func<int[], string> aggFunc = f => {
+            Func<int[], string> aggFunc = f =>
+            {
                 foreach (var func in funcs)
                 {
                     var res = func(f);
@@ -103,6 +104,65 @@ public class Day19 : DayBase
 
     public override string SecondStar()
     {
-        throw new NotImplementedException();
+        var input = GetRawData().Replace("\r", "");
+        var rules = input.Split("\n\n")[0].Split("\n", StringSplitOptions.RemoveEmptyEntries);
+        var parts = input.Split("\n\n")[1].Split("\n", StringSplitOptions.RemoveEmptyEntries);
+
+        var functions = new Dictionary<string, Func<(int, int)[], List<(int, int)[]>>>();
+
+        foreach (var rule in rules)
+        {
+            var brack = rule.IndexOf("{");
+            var name = rule[..brack];
+            var process = rule[(brack + 1)..^1];
+            var pps = process.Split(",", StringSplitOptions.RemoveEmptyEntries);
+
+            Func<(int, int)[], List<(int, int)[]>> func = f =>
+            {
+                var ret = new List<(int, int)[]>();
+                foreach (var pp in pps)
+                {
+                    if (pp.Contains("<") || pp.Contains(">"))
+                    {
+                        var fCopy = f.Select(p => p).ToArray();
+                        var l = pp[0];
+                        var r = pp[(pp.IndexOf(":") + 1)..];
+                        var i = pp.GetIntegers().Single();
+                        var rang = f[Map[l]];
+                        if ((pp.Contains("<") && rang.Item1 <= i) || (pp.Contains(">") && rang.Item2 > i))
+                        {
+                            fCopy[Map[l]] = pp.Contains("<") ?
+                                (rang.Item1, rang.Item2 >= i ? i - 1 : rang.Item2) :
+                                (rang.Item1 <= i ? i + 1 : rang.Item1, rang.Item2);
+
+                            if (r == "A")
+                                ret.Add(fCopy);
+                            else if (r != "R")
+                                ret.AddRange(functions[r](fCopy));
+                        }
+
+                        f[Map[l]] = pp.Contains("<") ?
+                            (rang.Item1 < i ? i : rang.Item1, rang.Item2) :
+                            (rang.Item1, rang.Item2 > i ? i : rang.Item2);
+                    }
+                    else
+                    {
+                        if (pp == "A")
+                            ret.Add(f);
+                        else if (pp != "R")
+                            ret.AddRange(functions[pp](f));
+                    }
+                }
+
+                return ret;
+            };
+
+            functions.Add(name, func);
+        }
+
+        var ranges = Enumerable.Repeat((1, 4000),4).ToArray();
+        var result = functions["in"](ranges);
+
+        return result.Sum(r => r.Select(p => p.Item2 - p.Item1 + 1).Aggregate(1L, (acc, v) => acc * v)).ToString();
     }
 }
