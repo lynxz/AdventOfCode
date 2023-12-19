@@ -107,37 +107,13 @@ public class Day18 : DayBase
         var maxY = int.MinValue;
         foreach (var row in data)
         {
-            // var d = row.Split('#').Last()[..^1];
-            // var hex = d[..5];
-            // var direction = d.Last();
-            // var distance = int.Parse(hex, System.Globalization.NumberStyles.HexNumber);
-            // var (dy, dx) = directions[direction];
+            var d = row.Split('#').Last()[..^1];
+            var hex = d[..5];
+            var direction = d.Last();
+            var distance = int.Parse(hex, System.Globalization.NumberStyles.HexNumber);
+            var (dy, dx) = directions[direction];
 
-            // if (direction == '0' || direction == '2')
-            // {
-            //     horizontalRanges.Add((currentX + dx, currentX + dx * distance));
-            //     currentX += dx * distance;
-            //     if (currentX < minX)
-            //         minX = currentX;
-            //     if (currentX > maxX)
-            //         maxX = currentX;
-            // }
-            // else
-            // {
-            //     verticalRanges.Add((currentY + dy, currentY + dy * distance));
-            //     currentY += dy * distance;
-            //     if (currentY < minY)
-            //         minY = currentY;
-            //     if (currentY > maxY)
-            //         maxY = currentY;
-            // }
-
-            var direction = row[0];
-            var distance = row.GetIntegers().First();
-
-            var (dy, dx) = directions2[direction];
-
-            if (direction == 'L' || direction == 'R')
+            if (direction == '0' || direction == '2')
             {
                 horizontalRanges.Add((currentX + dx, currentX + dx * distance, currentY));
                 currentX += dx * distance;
@@ -155,63 +131,196 @@ public class Day18 : DayBase
                 if (currentY > maxY)
                     maxY = currentY;
             }
+
+            // var direction = row[0];
+            // var distance = row.GetIntegers().First();
+
+            // var (dy, dx) = directions2[direction];
+
+            // if (direction == 'L' || direction == 'R')
+            // {
+            //     horizontalRanges.Add((currentX + dx, currentX + dx * distance, currentY));
+            //     currentX += dx * distance;
+            //     if (currentX < minX)
+            //         minX = currentX;
+            //     if (currentX > maxX)
+            //         maxX = currentX;
+            // }
+            // else
+            // {
+            //     verticalRanges.Add((currentY + dy, currentY + dy * distance, currentX));
+            //     currentY += dy * distance;
+            //     if (currentY < minY)
+            //         minY = currentY;
+            //     if (currentY > maxY)
+            //         maxY = currentY;
+            // }
         }
 
         var sum = 0L;
 
-        var vs = new Stack<(int Start, int End, int X)>();
-        var hs = new Stack<(int Start, int End, int Y)>();
-        var index = verticalRanges.IndexOf(verticalRanges.First(r => r.X == minX));
-        vs.Push(verticalRanges[index]);
+        var leftIndex = verticalRanges.IndexOf(verticalRanges.First(r => r.End == minY));
+        var rightIndex = verticalRanges.IndexOf(verticalRanges.First(r => r.Start == minY + 1));
 
-        while (vs.Count > 0)
+        var leftRange = verticalRanges[leftIndex];
+        var rightRange = verticalRanges[rightIndex];
+        var hr = horizontalRanges[(leftIndex + 1) % horizontalRanges.Count].SizeOfRange() + 1;
+        var done = false;
+        var leftStack = new Stack<(int Start, int End, int X)>();
+        var rightStack = new Stack<(int Start, int End, int X)>();
+        var hrStack = new Stack<(int Start, int End, int Y)>();
+
+        do
         {
-            hs.Push(horizontalRanges[index]);
-            index = (index + 1) % verticalRanges.Count;
-            var range = verticalRanges[index];
-            var pr = 0;
-            var hr = 0L;
 
-            if (range.Start < range.End)
+            if (leftRange.Start < rightRange.End)
             {
-                vs.Push(range);
+                sum += hr * leftRange.SizeOfRange();
+                rightRange = (leftRange.Start + 1, rightRange.End, rightRange.X);
+                leftRange = (leftRange.Start, leftRange.Start, leftRange.X);
             }
-            else
+            else if (leftRange.Start >= rightRange.End)
             {
-                var prevRange = vs.Pop();
-                var prevH = hs.Pop();
-                var rs = Math.Min(prevRange.SizeOfRange(), range.SizeOfRange());
+                sum += hr * rightRange.SizeOfRange();
+                leftRange = (leftRange.Start, rightRange.End + 1, leftRange.X);
+                rightRange = (rightRange.End, rightRange.End, rightRange.X);
+            }
 
-                while (rs != 0)
+            if (leftRange.Start == leftRange.End && !done)
+            {
+                var lhr = (0, 0, 0);
+                if (leftStack.Count == 0)
                 {
-                    
-                    if (prevH.Start > prevH.End)
-                    {
-                        sum += prevH.SizeOfRange();
-                        hr -= prevH.SizeOfRange() + 1;
-                    }
-                    else if (prevH.Start < prevH.End)
-                    {
-                       hr += prevH.SizeOfRange() + 1;
-                        sum += hr;
-                    }
-                    
-
-                    sum += rs * hr;
-
-                    if (rs < prevRange.SizeOfRange())
-                    {
-                        prevRange = (prevRange.Start, prevRange.End + (int)rs, prevRange.X);
-                        prevH = (prevRange.X, prevRange.X, prevH.Y);
-                    } else {
-                        // Fix this
-                    }
+                    leftIndex = leftIndex - 1 < 0 ? verticalRanges.Count - 1 : leftIndex - 1;
+                    leftRange = verticalRanges[leftIndex];
+                    lhr = horizontalRanges[(leftIndex + 1) % horizontalRanges.Count];
+                }
+                else
+                {
+                    leftRange = leftStack.Pop();
+                    lhr = hrStack.Pop();
                 }
 
+                done = leftIndex == rightIndex;
+                if (!done)
+                {
+                    var prevX = leftRange.X;
+
+                    if (prevX < leftRange.X)
+                    {
+                        hr -= lhr.SizeOfRange();
+                        sum += lhr.SizeOfRange();
+                    }
+                    else
+                        hr += lhr.SizeOfRange();
+                }
 
             }
+            if (rightRange.Start == rightRange.End && !done)
+            {
+                var rhr = (0, 0, 0);
+                if (rightStack.Count == 0)
+                {
+                    rightIndex = (rightIndex + 1) % verticalRanges.Count;
+                    rightRange = verticalRanges[rightIndex];
+                    rhr = horizontalRanges[rightIndex];
+                }
+                else
+                {
+                    rightRange = rightStack.Pop();
+                    rhr = hrStack.Pop();
+                }
 
-        }
+                done = leftIndex == rightIndex;
+                if (!done)
+                {
+                    var prevX = rightRange.X;
+
+                    if (prevX > rightRange.X)
+                    {
+                        hr -= rhr.SizeOfRange();
+                        sum += rhr.SizeOfRange();
+                    }
+                    else
+                        hr += rhr.SizeOfRange();
+                }
+            }
+
+            while (leftRange.Start < leftRange.End)
+            {
+                leftStack.Push(leftRange);
+                hrStack.Push(horizontalRanges[(leftIndex + 1) % horizontalRanges.Count]);
+                leftIndex = leftIndex - 1 < 0 ? verticalRanges.Count - 1 : leftIndex - 1;
+                leftRange = verticalRanges[leftIndex];
+            }
+
+            while(rightRange.End < rightRange.Start)
+            {
+                rightStack.Push(rightRange);
+                hrStack.Push(horizontalRanges[rightIndex]);
+                rightIndex = (rightIndex + 1) % verticalRanges.Count;
+                rightRange = verticalRanges[rightIndex];
+            }
+
+        } while (!done);
+
+        sum += horizontalRanges[(leftIndex + 1) % horizontalRanges.Count].SizeOfRange() + 1;
+
+        // var vs = new Stack<(int Start, int End, int X)>();
+        // var hs = new Stack<(int Start, int End, int Y)>();
+        // var index = verticalRanges.IndexOf(verticalRanges.First(r => r.X == minX));
+        // vs.Push(verticalRanges[index]);
+
+        // while (vs.Count > 0)
+        // {
+        //     hs.Push(horizontalRanges[index]);
+        //     index = (index + 1) % verticalRanges.Count;
+        //     var range = verticalRanges[index];
+        //     var pr = 0;
+        //     var hr = 0L;
+
+        //     if (range.Start < range.End)
+        //     {
+        //         vs.Push(range);
+        //     }
+        //     else
+        //     {
+        //         var prevRange = vs.Pop();
+        //         var prevH = hs.Pop();
+        //         var rs = Math.Min(prevRange.SizeOfRange(), range.SizeOfRange());
+
+        //         while (rs != 0)
+        //         {
+
+        //             if (prevH.Start > prevH.End)
+        //             {
+        //                 sum += prevH.SizeOfRange();
+        //                 hr -= prevH.SizeOfRange();
+        //             }
+        //             else if (prevH.Start < prevH.End)
+        //             {
+        //                 hr += prevH.SizeOfRange() + 1;
+        //                 sum += hr;
+        //             }
+
+
+        //             sum += rs * hr;
+
+        //             if (rs < prevRange.SizeOfRange())
+        //             {
+        //                 prevRange = (prevRange.Start, prevRange.End + (int)rs, prevRange.X);
+        //                 prevH = (prevRange.X, prevRange.X, prevH.Y);
+        //                 rs = 0;
+        //             }
+        //             else
+        //             {
+        //                 // Fix this
+        //             }
+        //         }
+
+        //     }
+
+        // }
 
 
         // var rightIndex = verticalRanges.IndexOf(verticalRanges.First(r => r.Start == minY + 1));
