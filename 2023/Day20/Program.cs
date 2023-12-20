@@ -150,7 +150,7 @@ public class Day20 : DayBase
 
         return Algo.LCM(cycles.Select(c => (long)c).ToArray()).ToString();
     }
-    }
+    
 }
 
 public abstract class Module
