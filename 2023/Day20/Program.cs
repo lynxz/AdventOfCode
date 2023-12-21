@@ -41,7 +41,6 @@ public class Day20 : DayBase
         var highCount = 0;
         for (int i = 0; i < 1000; i++)
         {
-            //System.Console.WriteLine("button -low-> broadcaster");
             queue.Enqueue(("broadcaster", "button", 0));
             while (queue.Count > 0)
             {
@@ -60,12 +59,8 @@ public class Day20 : DayBase
                 {
                     foreach (var connectedModule in moduels[module].ConnectedModules)
                     {
-                        // var sig = nextSignal == 0 ? "low" : "high";
-                        // System.Console.WriteLine($"{module} -{sig}-> {connectedModule}");
                         queue.Enqueue((connectedModule, module, nextSignal));
                     }
-
-
                 }
             }
         }
