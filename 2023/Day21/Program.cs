@@ -49,22 +49,18 @@ public class Day21 : DayBase
     {
         var map = GetRowData().ToMultidimensionalArray();
         var start = Enumerable.Range(0, map.GetLength(0)).SelectMany(y => Enumerable.Range(0, map.GetLength(1)).Select(x => (y, x))).Single(c => map[c.y, c.x] == 'S');
-        var steps = 2 * 131 + 65;
         var max = map.GetLength(0);
         var half = max / 2;
 
-        var totalSteps = steps;
+        var totalSteps = 26501365;
         var frames = (totalSteps - 65) / 131;
-        var fullFrames = 2 * Enumerable.Range(0, frames - 1).Sum(i => (long)(2 * i + 1)) + 2 * (frames - 1) + 1;
-
-        long fc2 = Enumerable.Range(0, map.GetLength(0)).Sum(y => Enumerable.Range(0, half).Select(x => 2 * x + (y % 2)).Sum(x => map[y, x] == '#' ? 0 : 1));
-        // long up = Enumerable.Range(0, map.GetLength(0)).Sum(y => Enumerable.Range(y < half ? half - y :  ));
-
-        // var sum = fullFrames * fc;
+        var rings = Enumerable.Range(0, frames).Select(i => i == 0L ? 1 : 4L * i).ToList();
+        var zigFrames = Enumerable.Range(0, rings.Count).Where(i => i % 2 == 0).Select(i => rings[i]).Sum();
+        var zagFrames = Enumerable.Range(0, rings.Count).Where(i => i % 2 == 1).Select(i => rings[i]).Sum();
+        var smallSteps = frames;
+        var bigSteps = smallSteps - 1;
 
         var tiles = new HashSet<(int y, int x)> { start };
-        // var counts = new List<int>();
-
         for (int i = 0; i < 2 * 131 + 65; i++)
         {
             var newPos = new HashSet<(int y, int x)>();
@@ -92,22 +88,12 @@ public class Day21 : DayBase
             }
         }
 
-        var sum = (fullFrames - 1) * parts[2, 1] + parts[2,2]  + parts[0, 2] + parts[2, 0] + parts[4, 2] + parts[2, 4] + 2*parts[0, 1] + 2*parts[0, 3] + 2*parts[4, 1] + 2*parts[4, 3] + parts[1, 1] + parts[1, 3] + parts[3, 1] + parts[3, 3];
+        var sum = zagFrames * parts[2, 1] + 
+            zigFrames * parts[2, 2] + 
+            parts[0, 2] + parts[2, 0] + parts[4, 2] + parts[2, 4] + 
+            smallSteps * parts[0, 1] + smallSteps * parts[0, 3] + smallSteps * parts[4, 1] + smallSteps * parts[4, 3] + 
+            bigSteps * parts[1, 1] + bigSteps * parts[1, 3] + bigSteps * parts[3, 1] + bigSteps * parts[3, 3];
 
-        for (int y = -map.GetLength(0); y < 2 * map.GetLength(0); y++)
-        {
-            for (int x = -map.GetLength(0); x < 2 * map.GetLength(1); x++)
-            {
-                var relY = y >= 0 ? y % map.GetLength(0) : (map.GetLength(0) - (Math.Abs(y) % map.GetLength(0))) % map.GetLength(0);
-                var relX = x >= 0 ? x % map.GetLength(1) : (map.GetLength(1) - (Math.Abs(x) % map.GetLength(1))) % map.GetLength(1);
-                var c = map[relY, relX] == '#' ? '#' : tiles.Contains((y, x)) ? 'O' : '.';
-                if (map[relY, relX] == '#' && tiles.Contains((y, x)))
-                    throw new InvalidOperationException();
-                Console.Write(c);
-            }
-            System.Console.WriteLine();
-        }
-
-        return string.Empty;
+        return sum.ToString();
     }
 }
