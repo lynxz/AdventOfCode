@@ -37,6 +37,7 @@ public class Day25 : DayBase
             }
         }
 
+        // Max flow min cut algorithm
         var parent = new int[nodes.Length];
         var s = 0;
         var t = nodes.Length - 1;
