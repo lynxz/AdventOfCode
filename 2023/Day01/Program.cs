@@ -12,7 +12,11 @@ public class Day01 : DayBase
 
     public override string FirstStar()
     {
-        return GetRowData().Select(r => r.Where(c => Char.IsNumber(c)).Select(i => int.Parse(i.ToString()))).Sum(r => r.First() * 10 + r.Last()).ToString();
+        return GetRowData()
+        .Select(r => r.Where(c => Char.IsNumber(c))
+        .Select(i => int.Parse(i.ToString())))
+        .Sum(r => r.First() * 10 + r.Last())
+        .ToString();
     }
 
     public override string SecondStar()
