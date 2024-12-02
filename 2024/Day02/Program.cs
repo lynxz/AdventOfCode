@@ -1,6 +1,7 @@
 ﻿using Tools;
 
 var day = new Day02();
+day.OutputFirstStar();
 day.OutputSecondStar();
 
 public class Day02 : DayBase
@@ -12,24 +13,22 @@ public class Day02 : DayBase
     public override string FirstStar()
     {
         var data = GetRowData();
+        return  data.Count(r => IsSafe(r.GetIntegers())).ToString();
+    }
 
-        var safe = 0;
-        foreach (var row in data)
+    private static bool IsSafe(IEnumerable<int> ints)
+    {
+        var diffs = ints.Window(2).Select(w => w[1] - w[0]);
+
+        if (diffs.All(d => d < 0) || diffs.All(d => d > 0))
         {
-            var ints = row.GetIntegers();
-            var diffs = ints.Window(2).Select(w => w[1] - w[0]);
-
-            if (diffs.All(d => d < 0) || diffs.All(d => d > 0))
+            if (diffs.All(d => Math.Abs(d) < 4))
             {
-                if (diffs.All(d => Math.Abs(d) < 4))
-                {
-                    safe++;
-                }
+                return true;
             }
         }
 
-
-        return safe.ToString();
+        return false;
     }
 
     public override string SecondStar()
@@ -43,45 +42,23 @@ public class Day02 : DayBase
             var diffs = ints.Window(2).Select(w => w[1] - w[0]);
             var success = false;
 
-            if (diffs.All(d => d < 0) || diffs.All(d => d > 0))
-            {
-                if (diffs.All(d => Math.Abs(d) < 4))
-                {
-                   success = true;
-                }
-            }
+           success = IsSafe(ints);
 
             if (!success) {
                 var errorLine = FirstError(ints);
                 var newInts = ints.ToList();
                 newInts.RemoveAt(errorLine);
-                diffs = newInts.Window(2).Select(w => w[1] - w[0]);
-                if (diffs.All(d => d < 0) || diffs.All(d => d > 0))
-                {
-                    if (diffs.All(d => Math.Abs(d) < 4))
-                    {
-                        success = true;
-                    }
-                }
+                success = IsSafe(newInts);
                 if (!success) {
                     newInts = ints.ToList();
                     newInts.RemoveAt(errorLine+1);
-                    diffs = newInts.Window(2).Select(w => w[1] - w[0]);
-                    if (diffs.All(d => d < 0) || diffs.All(d => d > 0))
-                    {
-                        if (diffs.All(d => Math.Abs(d) < 4))
-                        {
-                            success = true;
-                        } 
-                    }
+                    success = IsSafe(newInts);
                 }
             }
            
             if (success) {
                 safe++;
-            } else {
-                Console.WriteLine(string.Join(" ", ints));
-            }
+            } 
         }
 
 
