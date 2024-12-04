@@ -15,14 +15,6 @@ public class Day03 : DayBase
     {
         var regEx = new Regex(@"mul\((\d+),(\d+)\)");
         var data = GetRawData();
-        // var matches = regEx.Matches(data);
-        // var result = 0L;
-        // foreach (Match match in matches)
-        // {
-        //     var a = int.Parse(match.Groups[1].Value);
-        //     var b = int.Parse(match.Groups[2].Value);
-        //     result += a * b;
-        // }
         return  regEx.Matches(data).Sum(mult).ToString();
     }
 
@@ -36,12 +28,10 @@ public class Day03 : DayBase
     public override string SecondStar()
     {
         var regEx = new Regex(@"mul\((\d+),(\d+)\)|do\(\)|don't\(\)");
-
         var data = GetRawData();
-        var matches = regEx.Matches(data);
         var result = 0L;
         var shouldAdd = true;
-        foreach (Match match in matches)
+        foreach (Match match in regEx.Matches(data))
         {
             if (match.Value == "do()")
             {
@@ -53,11 +43,10 @@ public class Day03 : DayBase
             }
             else
             {
-                var a = int.Parse(match.Groups[1].Value);
-                var b = int.Parse(match.Groups[2].Value);
+                var m = mult(match);
                 if (shouldAdd)
                 {
-                    result += a * b;
+                    result += m;
                 }
             }
         }
