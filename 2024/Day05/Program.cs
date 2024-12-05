@@ -90,7 +90,7 @@ public class Day05 : DayBase
                     var temp = fix[k];
                     fix[k] = fix[i];
                     fix[i] = temp;
-                    i = -1;
+                    i = i-1;
                 }
             }
 
