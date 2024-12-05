@@ -2,6 +2,7 @@
 
 var day = new Day05();
 day.OutputFirstStar();
+day.OutputSecondStar();
 
 public class Day05 : DayBase
 {
@@ -32,16 +33,9 @@ public class Day05 : DayBase
             var correct = true;
             for (int i = 0; i < update.Length - 1; i++)
             {
-                for (int j = i + 1; j < update.Length; j++)
+                if (!update.Skip(i + 1).All(j => order.ContainsKey(update[i]) && order[update[i]].Contains(j)))
                 {
-                    if (!order[update[i]].Contains(update[j]))
-                    {
-                        correct = false;
-                        break;
-                    }
-                }
-                if (!correct)
-                {
+                    correct = false;
                     break;
                 }
             }
@@ -56,9 +50,9 @@ public class Day05 : DayBase
 
     public override string SecondStar()
     {
-        var rowData = GetRowData();
+        var rowData = GetRowData().Select(r => r.Trim()).ToList();
 
-        var rules = rowData.TakeWhile(r => r.GetIntegers().Length < 3).Select(r => r.GetIntegers()).ToList();
+        var rules = rowData.TakeWhile(r => r.GetIntegers().Length == 2).Select(r => r.GetIntegers()).ToList();
 
         var order = new Dictionary<int, List<int>>();
         foreach (var o in rules)
@@ -75,23 +69,32 @@ public class Day05 : DayBase
         var sum = 0;
         foreach (var update in updates)
         {
-            var correct = true;
             for (int i = 0; i < update.Length - 1; i++)
             {
-                for (int j = i + 1; j < update.Length; j++)
+                if (!update.Skip(i + 1).All(j => order.ContainsKey(update[i]) && order[update[i]].Contains(j)))
                 {
-                    if (!order[update[i]].Contains(update[j]))
-                    {
-                        toFix.Add(update);
-                        correct = false;
-                        break;
-                    }
-                }
-                if (!correct)
-                {
+                    toFix.Add(update);
                     break;
                 }
             }
+        }
+
+        foreach (var fix in toFix)
+        {
+            for (int i = 0; i < fix.Length; i++)
+            {
+                var faulty = fix.Skip(i + 1).FirstOrDefault(j => !order.ContainsKey(fix[i]) || !order[fix[i]].Contains(j));
+                if (faulty != default)
+                {
+                    var k = Enumerable.Range(i, fix.Length - i).First(j => fix[j] == faulty);
+                    var temp = fix[k];
+                    fix[k] = fix[i];
+                    fix[i] = temp;
+                    i = -1;
+                }
+            }
+
+            sum += fix[fix.Length / 2];
         }
 
         return sum.ToString();
