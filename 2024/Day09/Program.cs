@@ -38,8 +38,9 @@ public class Day09 : DayBase
                 Enumerable.Range(diskPos, files[i]).ToList().ForEach(j => sum += i * j);
                 diskPos += files[i];
                 i++;
+                freeIndex++;
             }
-            freeIndex = Enumerable.Range(0, space.Count).First(j => space[j] != 0);
+            //freeIndex = Enumerable.Range(0, space.Count).First(j => space[j] != 0);
         }
         if (space[freeIndex] != 0 && files[filePos] != 0)
         {
