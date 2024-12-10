@@ -1,10 +1,19 @@
 ﻿using Tools;
 
 var day = new Day10();
+day.OutputFirstStar();
 day.OutputSecondStar();
 
 public class Day10 : DayBase
 {
+
+    List<(int x, int y)> Steps = new List<(int x, int y)>() {
+            (0, 1),
+            (1, 0),
+            (0, -1),
+            (-1, 0)
+        };
+
     public Day10() : base("10")
     {
     }
@@ -23,12 +32,7 @@ public class Day10 : DayBase
             .ToList()
             .ForEach(stack.Push);
 
-        var steps = new List<(int x, int y)>() {
-            (0, 1),
-            (1, 0),
-            (0, -1),
-            (-1, 0)
-        };
+        
         var tops = new Dictionary<(int x, int y), HashSet<(int x, int y)>>();
         HashSet<(int x, int y)> currList = null;
         while (stack.Count != 0)
@@ -40,11 +44,11 @@ public class Day10 : DayBase
             }
             if (data[pos.y][pos.x] == '9')
             {
-                currList.Add(pos);
+                currList!.Add(pos);
             }
             else
             {
-                steps.ForEach(step =>
+                Steps.ForEach(step =>
                 {
                     var x = pos.x + step.x;
                     var y = pos.y + step.y;
@@ -73,12 +77,6 @@ public class Day10 : DayBase
             .ToList()
             .ForEach(stack.Push);
 
-        var steps = new List<(int x, int y)>() {
-            (0, 1),
-            (1, 0),
-            (0, -1),
-            (-1, 0)
-        };
         var paths = 0;
         while (stack.Count != 0)
         {
@@ -90,7 +88,7 @@ public class Day10 : DayBase
             }
             else
             {
-                steps.ForEach(step =>
+                Steps.ForEach(step =>
                 {
                     var x = pos.x + step.x;
                     var y = pos.y + step.y;
