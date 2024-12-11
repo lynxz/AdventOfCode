@@ -27,7 +27,7 @@ public class Day11 : DayBase
                 if (digits % 2 == 0)
                 {
                     var n = Enumerable.Repeat((ulong)10, digits / 2).Aggregate((a, b) => a * b);
-                    newStones.Add(stone / n );
+                    newStones.Add(stone / n);
                     newStones.Add(stone % n);
                 }
                 else
@@ -43,7 +43,7 @@ public class Day11 : DayBase
         return stones.Count.ToString();
     }
 
-    int CountDigits(ulong n)
+    static int CountDigits(ulong n)
     {
         if (n == 0)
         {
@@ -61,9 +61,35 @@ public class Day11 : DayBase
 
     public override string SecondStar()
     {
-        var stones = GetRawData().GetIntegers().Select(i => Convert.ToUInt64(i)).Take(1).ToList();
+        var stones = GetRawData().GetIntegers().Select(i => Convert.ToUInt64(i)).ToList();
+        var memo = new Dictionary<ulong, List<ulong>>();
+        long sum = 0;
+        foreach (var stone in stones) {
+            var v = GetNumberOfStones(stone, 0, memo);
+            System.Console.WriteLine(stone + " " + v);
+            sum += v;
+        }
 
-        for (int i = 0; i < 75; i++)
+        return sum.ToString();
+    }
+
+    static long GetNumberOfStones(ulong stone, int level, Dictionary<ulong, List<ulong>> memo)
+    {
+        if (!memo.ContainsKey(stone))
+        {
+            memo.Add(stone, GetStones(stone));
+        }
+        if (level == 2) {
+            return memo[stone].Count;
+        }
+
+        return memo[stone].Sum(s => GetNumberOfStones(s, level+1, memo));
+    }
+
+    static List<ulong> GetStones(ulong seed)
+    {
+        var stones = new List<ulong> { seed };
+        for (int i = 0; i < 25; i++)
         {
             var newStones = new List<ulong>();
             foreach (var stone in stones)
@@ -77,7 +103,7 @@ public class Day11 : DayBase
                 if (digits % 2 == 0)
                 {
                     var n = Enumerable.Repeat((ulong)10, digits / 2).Aggregate((a, b) => a * b);
-                    newStones.Add(stone / n );
+                    newStones.Add(stone / n);
                     newStones.Add(stone % n);
                 }
                 else
@@ -86,10 +112,7 @@ public class Day11 : DayBase
                 }
             }
             stones = newStones;
-            System.Console.WriteLine($"Iteration {i + 1}: {stones.Count}");
         }
-
-
-        return stones.Count.ToString();
+        return stones;
     }
 }
