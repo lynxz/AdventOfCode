@@ -131,7 +131,7 @@ public class Day12 : DayBase
                 processed.Add((px, py));
             }
             var sides = WalkPerimeter(perimeter, data, xMax, yMax);
-            System.Console.WriteLine($"Crop: {crop}, Sides: {sides}, Area: {area}");
+            System.Console.WriteLine($"Crop: {crop}, Area: {area}, Sides: {sides}, Total: {area * sides}");
             totalSum += area * sides;
         }
 
@@ -150,41 +150,52 @@ public class Day12 : DayBase
     {
         var visited = new HashSet<(int x, int y)>();
         var sides = 0;
-        var start = perimeter.OrderBy(c => c.y).ThenBy(c => c.x).First();
-        var crop = data[start.y][start.x];
-
-        var outDir = Dirs.First(d => d.x + start.x < 0 || d.x + start.x >= xMax || d.y + start.y < 0 || d.y + start.y >= yMax || data[d.y + start.y][d.x + start.x] != crop);
-        var outDirIndex = Dirs.IndexOf(outDir);
-        var startDirIndex = (outDirIndex + 1) % Dirs.Count;
-
-        var pos = start;
-        var currDirIndex = startDirIndex;
-        do
+        while (!perimeter.All(p => visited.Contains(p)))
         {
-            visited.Add(pos);
-            var od = Dirs[outDirIndex];
-            var dx = pos.x + od.x;
-            var dy = pos.y + od.y;
-            if (dx >= 0 && dx < xMax && dy >= 0 && dy < yMax && data[dy][dx] == crop)
-            {
-                sides++;
-                currDirIndex = (currDirIndex + 3) % Dirs.Count; 
-                outDirIndex = (outDirIndex + 3) % Dirs.Count; 
-                continue;
-            }
-            od = Dirs[currDirIndex];
-            dx = pos.x + od.x;
-            dy = pos.y + od.y;
-            if (dx < 0 || dx >= xMax || dy < 0 || dy >= yMax && data[dy][dx] != crop)
-            {
-                sides++;
-                currDirIndex = (currDirIndex + 1) % Dirs.Count;
-                outDirIndex = (outDirIndex + 1) % Dirs.Count;
-                continue;
-            }
-            pos = (dx, dy);
+            var points = perimeter.Where(p => !visited.Contains(p)).ToList();
 
-        } while (!(pos == start && currDirIndex == startDirIndex));
+
+            var start = points.OrderBy(c => c.y).ThenBy(c => c.x).First();
+            var crop = data[start.y][start.x];
+
+            var outDir = Dirs.First(d => d.x + start.x < 0 || d.x + start.x >= xMax || d.y + start.y < 0 || d.y + start.y >= yMax || data[d.y + start.y][d.x + start.x] != crop);
+            var outDirIndex = Dirs.IndexOf(outDir);
+            var startDirIndex = (outDirIndex + 1) % Dirs.Count;
+
+            var pos = start;
+            var currDirIndex = startDirIndex;
+            do
+            {
+                visited.Add(pos);
+                var od = Dirs[outDirIndex];
+                var dx = pos.x + od.x;
+                var dy = pos.y + od.y;
+                if (dx >= 0 && dx < xMax && dy >= 0 && dy < yMax && data[dy][dx] == crop)
+                {
+                    sides++;
+                    currDirIndex = (currDirIndex + 3) % Dirs.Count;
+                    outDirIndex = (outDirIndex + 3) % Dirs.Count;
+                    pos = (dx, dy);
+                    continue;
+                }
+                od = Dirs[currDirIndex];
+                dx = pos.x + od.x;
+                dy = pos.y + od.y;
+
+                var dia = (x: Dirs[currDirIndex].x == 0 ? Dirs[outDirIndex].x : Dirs[currDirIndex].x,y: Dirs[currDirIndex].y == 0 ? Dirs[outDirIndex].y : Dirs[currDirIndex].y);
+                var ddx = pos.x + dia.x;
+                var ddy = pos.y + dia.y;
+                if (dx < 0 || dx >= xMax || dy < 0 || dy >= yMax || (!perimeter.Contains((ddx, ddy)) && data[dy][dx] != crop))
+                {
+                    sides++;
+                    currDirIndex = (currDirIndex + 1) % Dirs.Count;
+                    outDirIndex = (outDirIndex + 1) % Dirs.Count;
+                    continue;
+                }
+                pos = (dx, dy);
+
+            } while (!(pos == start && currDirIndex == startDirIndex));
+        }
 
         return sides;
     }
