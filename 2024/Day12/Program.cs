@@ -81,7 +81,6 @@ public class Day12 : DayBase
         var data = GetRowData().Select(r => r.Trim()).ToArray();
         var yMax = data.Length;
         var xMax = data[0].Length;
-
         var processed = new HashSet<(int x, int y)>();
         var stack = new Stack<(int x, int y)>();
 
@@ -98,7 +97,7 @@ public class Day12 : DayBase
 
             var crop = data[y][x];
             var area = 0;
-            var perimeter = new List<(int x, int y)>();
+            var perimeter = new List<(int x, int y, int v)>();
             var plotPoints = new Stack<(int x, int y)>();
             plotPoints.Push((x, y));
 
@@ -111,9 +110,10 @@ public class Day12 : DayBase
                     var ny = py + dy;
                     if (nx < 0 || nx >= xMax || ny < 0 || ny >= yMax || data[ny][nx] != crop)
                     {
-                        if (!perimeter.Contains((px, py)))
+                        var v = nx < 0 || nx >= xMax || ny < 0 || ny >= yMax ? -1 : data[ny][nx];
+                        if (!perimeter.Contains((px, py, v)))
                         {
-                            perimeter.Add((px, py));
+                            perimeter.Add((px, py, v));
                         }
                         if (nx >= 0 && nx < xMax && ny >= 0 && ny < yMax)
                         {
@@ -131,72 +131,73 @@ public class Day12 : DayBase
                 processed.Add((px, py));
             }
             var sides = WalkPerimeter(perimeter, data, xMax, yMax);
-            System.Console.WriteLine($"Crop: {crop}, Area: {area}, Sides: {sides}, Total: {area * sides}");
             totalSum += area * sides;
         }
-
+        
         return totalSum.ToString();
     }
 
-    List<(int x, int y)> Dirs = new List<(int x, int y)>()
+    private int WalkPerimeter(List<(int x, int y, int v)> perimeter, string[] data, int xMax, int yMax)
     {
-        (1, 0),
-        (0, 1),
-        (-1, 0),
-        (0, -1),
-    };
-
-    private int WalkPerimeter(List<(int x, int y)> perimeter, string[] data, int xMax, int yMax)
-    {
-        var visited = new HashSet<(int x, int y)>();
+        var visited = new HashSet<(int x, int y, int v)>();
         var sides = 0;
         while (!perimeter.All(p => visited.Contains(p)))
         {
             var points = perimeter.Where(p => !visited.Contains(p)).ToList();
-
-
             var start = points.OrderBy(c => c.y).ThenBy(c => c.x).First();
             var crop = data[start.y][start.x];
 
-            var outDir = Dirs.First(d => d.x + start.x < 0 || d.x + start.x >= xMax || d.y + start.y < 0 || d.y + start.y >= yMax || data[d.y + start.y][d.x + start.x] != crop);
-            var outDirIndex = Dirs.IndexOf(outDir);
-            var startDirIndex = (outDirIndex + 1) % Dirs.Count;
+            var outDirIndex = Enumerable.Range(0, Directions.Count).First(i => start.v == GetOutDir((start.x, start.y), i, data, xMax, yMax));
+            var startDirIndex = (outDirIndex + 1) % Directions.Count;
 
             var pos = start;
             var currDirIndex = startDirIndex;
             do
             {
                 visited.Add(pos);
-                var od = Dirs[outDirIndex];
+
+                var v = 0;
+                var od = Directions[outDirIndex];
                 var dx = pos.x + od.x;
                 var dy = pos.y + od.y;
                 if (dx >= 0 && dx < xMax && dy >= 0 && dy < yMax && data[dy][dx] == crop)
                 {
                     sides++;
-                    currDirIndex = (currDirIndex + 3) % Dirs.Count;
-                    outDirIndex = (outDirIndex + 3) % Dirs.Count;
-                    pos = (dx, dy);
+                    currDirIndex = (currDirIndex + 3) % Directions.Count;
+                    outDirIndex = (outDirIndex + 3) % Directions.Count;
+                    v = GetOutDir((dx, dy), outDirIndex, data, xMax, yMax);
+                    pos = (dx, dy, v);
                     continue;
                 }
-                od = Dirs[currDirIndex];
+                od = Directions[currDirIndex];
                 dx = pos.x + od.x;
                 dy = pos.y + od.y;
 
-                var dia = (x: Dirs[currDirIndex].x == 0 ? Dirs[outDirIndex].x : Dirs[currDirIndex].x,y: Dirs[currDirIndex].y == 0 ? Dirs[outDirIndex].y : Dirs[currDirIndex].y);
+                var dia = (x:  Directions[outDirIndex].x + Directions[currDirIndex].x,y:  Directions[outDirIndex].y + Directions[currDirIndex].y);
                 var ddx = pos.x + dia.x;
                 var ddy = pos.y + dia.y;
-                if (dx < 0 || dx >= xMax || dy < 0 || dy >= yMax || (!perimeter.Contains((ddx, ddy)) && data[dy][dx] != crop))
+                if (dx < 0 || dx >= xMax || dy < 0 || dy >= yMax || (!perimeter.Any(d => d.x == ddx && d.y == ddy) && data[dy][dx] != crop))
                 {
                     sides++;
-                    currDirIndex = (currDirIndex + 1) % Dirs.Count;
-                    outDirIndex = (outDirIndex + 1) % Dirs.Count;
+                    currDirIndex = (currDirIndex + 1) % Directions.Count;
+                    outDirIndex = (outDirIndex + 1) % Directions.Count;
+                    v = GetOutDir((pos.x, pos.y), outDirIndex, data, xMax, yMax);
+                    pos = (pos.x, pos.y, v);
                     continue;
                 }
-                pos = (dx, dy);
+                v = GetOutDir((dx, dy), outDirIndex, data, xMax, yMax);
+                pos = (dx, dy, v);
 
-            } while (!(pos == start && currDirIndex == startDirIndex));
+            } while (!(pos.x == start.x && pos.y == start.y && currDirIndex == startDirIndex));
         }
 
         return sides;
+    }
+
+    private int GetOutDir((int x, int y) pos, int outDirIndex, string[] data, int xMax, int yMax) {
+        var od = Directions[outDirIndex];
+        var dx = pos.x + od.x;
+        var dy = pos.y + od.y;
+        return dx < 0 || dx >= xMax || dy < 0 || dy >= yMax ? -1 : data[dy][dx];
     }
 }
