@@ -8,8 +8,6 @@ public class Day14 : DayBase
 
     private int XMax = 101;
     private int YMax = 103;
-    // private int XMax = 11;
-    // private int YMax = 7;
     public Day14() : base("14")
     {
     }

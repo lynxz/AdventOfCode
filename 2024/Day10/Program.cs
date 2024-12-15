@@ -34,7 +34,7 @@ public class Day10 : DayBase
 
         
         var tops = new Dictionary<(int x, int y), HashSet<(int x, int y)>>();
-        HashSet<(int x, int y)> currList = null;
+        HashSet<(int x, int y)>? currList = null;
         while (stack.Count != 0)
         {
             var pos = stack.Pop();
