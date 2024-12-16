@@ -1,6 +1,7 @@
 ﻿using Tools;
 
 var day = new Day16();
+day.PostFirstStar();
 day.OutputSecondStar();
 
 public class Day16 : DayBase
@@ -149,69 +150,45 @@ public class Day16 : DayBase
         }
 
         var (cost, dist, prev) = Djikstra(graph, start, end);
+        var ns = new Stack<((int x, int y), (int dx, int dy), int cost, HashSet<(int x, int y)> visited)>();
 
-        stack.Push(end);
-        var visited = new HashSet<(int x, int y)>();
-        visited.Add(start);
-        while (stack.Count > 0)
-        {
-            var coord = stack.Pop();
-            visited.Add(coord);
-            foreach (var node in graph[coord])
-            {
-                if (visited.Contains(node))
-                {
-                    continue;
-                }
-                var (c, _, _) = Djikstra(graph, start, node);
-                var p = prev[coord];
-                var (c2, _) = CalculateDistance(node, coord, coord.x - p.x, coord.y - p.y);
-                if (dist[coord] - c2 >= c)
-                {
-                    stack.Push(node);
-                }
-            }
-        }
+        ns.Push((start, (0, 1), 0, new HashSet<(int x, int y)>()));
+        var allVisited = new List<(int x, int y)>();
+        var minScore = new Dictionary<(int x, int y, int dx, int dy), int>();   
 
-        return visited.Count.ToString();
-    }
-
-    private static (int cost, Dictionary<(int x, int y), int> dist, Dictionary<(int x, int y), (int x, int y)> prev) Djikstra2(Dictionary<(int x, int y), List<(int x, int y)>> graph, (int x, int y) start, (int x, int y) end)
-    {
-        var distances = new Dictionary<(int x, int y), int>();
-        var visited = new HashSet<(int x, int y)>();
-        var queue = new PriorityQueue<(int x, int y, int dx, int dy), int>();
-        queue.Enqueue((start.x, start.y, 1, 0), 0);
-        distances[start] = 0;
-        var prev = new Dictionary<(int x, int y), (int x, int y)>();
-
-        while (queue.Count > 0)
-        {
-            var current = queue.Dequeue();
-            var pos = (current.x, current.y);
-            if (visited.Contains(pos))
+        while (ns.Count > 0) {
+            var (coord, dir, oc, ov) = ns.Pop();
+            if (ov.Contains(coord))
             {
                 continue;
             }
-
-            visited.Add(pos);
-            foreach (var neighbour in graph[pos])
+            ov.Add(coord);
+            if (coord == end)
             {
-                var (cost, (dx, dy)) = CalculateDistance(pos, neighbour, current.dx, current.dy);
-                if (!distances.ContainsKey(neighbour) || distances[neighbour] > distances[pos] + cost)
+                allVisited.AddRange(ov);
+                continue;
+            }
+            foreach (var node in graph[coord])
+            {
+                if (ov.Contains(node))
                 {
-                    prev[neighbour] = pos;
-                    if (cost > 1)
-                    {
-                        distances[pos] = (prev.ContainsKey(pos) ? distances[prev[pos]] : 0) + 1000;
-                        cost = 1;
-                    }
-                    distances[neighbour] = distances[pos] + cost;
+                    continue;
                 }
-                queue.Enqueue((neighbour.x, neighbour.y, dx, dy), distances[neighbour]);
+                var (c, (dx, dy)) = CalculateDistance(coord, node, dir.dx, dir.dy);
+                if (c + oc > cost)
+                {
+                    continue;
+                }
+                var nh = new HashSet<(int x, int y)>(ov);
+                if (!minScore.ContainsKey((node.x, node.y, dx, dy)) || minScore[(node.x, node.y, dx, dy)] >= c + oc)
+                {
+                    minScore[(node.x, node.y, dx, dy)] = c + oc;
+                    ns.Push((node, (dx, dy), c + oc, nh));
+                }
+                
             }
         }
 
-        return (distances[end], distances, prev);
+        return allVisited.Distinct().Count().ToString();
     }
 }
