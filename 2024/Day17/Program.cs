@@ -1,6 +1,7 @@
 ﻿using Tools;
 
 var day = new Day17();
+day.OutputFirstStar();
 day.OutputSecondStar();
 
 public class Day17 : DayBase
@@ -11,7 +12,7 @@ public class Day17 : DayBase
 
     public override string FirstStar()
     {
-        var computer = new Computer(35, 0, 0);
+        var computer = new Computer(29, 0, 0);
         var program = "2,4,1,4,7,5,4,1,1,4,5,5,0,3,3,0".GetIntegers();
 
         var result = computer.Run(program);
@@ -20,22 +21,17 @@ public class Day17 : DayBase
 
     public override string SecondStar()
     {
-
         var stack = new Stack<(ulong, ulong)>();
         var program = "2,4,1,4,7,5,4,1,1,4,5,5,0,3,3,0";
         var values = program.GetIntegers();
         var output = string.Empty;
-        stack.Push((1, 0));
-        ulong a = 0;
-        ulong i = 0;
-        while (program != output)
-        {
-            var ii = 0;
-            (a, i) = stack.Pop();
-            output = string.Empty;
-            while (program != output)
-            {
-                var la = i + a;
+        stack.Push((35, 0));
+        ulong total = 0;
+
+        while (program != output) {
+            var (a, i) = stack.Pop();
+            while (program != output) {
+                ulong la = i + a;
                 var computer = new Computer(la, 0, 0);
                 var result = computer.Run(values);
                 output = string.Join(",", result);
@@ -43,24 +39,18 @@ public class Day17 : DayBase
                 if (program.EndsWith(output))
                 {
                     a = la;
-                    stack.Push((a, i + 1));
-                    a = a << 1;
+                    total = a;
+                    stack.Push((a, i));
+                    a = a << 3;
                     i = 0;
                 }
-                if (i > 7)
-                {
-                    a = a << 1;
-                    ii++;
-                    i = 0;
-                }
-                if (ii > 3) {
+                if (i > 7) {
                     break;
                 }
             }
         }
 
-
-        return a.ToString();
+        return total.ToString();
     }
 }
 
