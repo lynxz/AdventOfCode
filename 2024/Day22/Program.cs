@@ -79,7 +79,7 @@ public class Day22 : DayBase
                     sumDictionary[key] += vendorDict[key];
                 }
             }
-        }ystem.Console.WriteLine(result.Key);
+        }
 
         return sumDictionary
             .OrderByDescending(kvp => kvp.Value)
