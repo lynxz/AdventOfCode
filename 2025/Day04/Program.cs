@@ -1,7 +1,8 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices.Marshalling;
 using Tools;
 
 var day = new Day04();
+day.OutputFirstStar();
 day.OutputSecondStar();
 
 public class Day04 : DayBase
@@ -12,83 +13,54 @@ public class Day04 : DayBase
 
     public override string FirstStar()
     {
-        var data = GetRowData().Select(s => s.Trim().ToCharArray()).ToMultidimensionalArray();
+        var rows = GetRowData().Where(r => !string.IsNullOrWhiteSpace(r)).Select(s => s.Trim().ToCharArray());
+        var l = rows.First().Length;
+        var all = rows.SelectMany(r => r).ToArray();
+        var t = all.Count();
         (int x, int y)[] offsets = [(0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1)];
-        var sum = 0;
-        for (int y = 0; y < data.GetLength(0); y++)
+
+        return Enumerable.Range(0, t).Where(i =>
         {
-            for (int x = 0; x < data.GetLength(1); x++)
-            {
-                var current = data[y, x];
-
-                var rolls = 0;
-                if (current != '@')
-                {
-                    continue;
-                }
-                foreach (var (dx, dy) in offsets)
-                {
-                    if (x + dx < data.GetLength(1) && y + dy < data.GetLength(0) && y + dy >= 0 && x + dx >= 0)
-                    {
-                        if (data[y + dy, x + dx] == '@')
-                        {
-                            rolls++;
-                        }
-                    }
-                }
-                if (rolls < 4)
-                {
-                    sum++;
-                }
-            }
-
-        }
-
-        return sum.ToString();
+            var x = i % l;
+            var y = i / l;
+            if (all[i] != '@') return false;
+            return offsets
+                .Where(o => x + o.x < l && y + o.y < t / l && y + o.y >= 0 && x + o.x >= 0)
+                .Count(o => all[(y + o.y) * l + x + o.x] == '@') < 4;
+        }).Count()
+        .ToString();
     }
 
     public override string SecondStar()
     {
-        var data = GetRowData().Select(s => s.Trim().ToCharArray()).ToMultidimensionalArray();
+        var rows = GetRowData().Where(r => !string.IsNullOrWhiteSpace(r)).Select(s => s.Trim().ToCharArray());
+        var l = rows.First().Length;
+        var all = rows.SelectMany(r => r).ToArray();
+        var t = all.Length;
         (int x, int y)[] offsets = [(0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1)];
 
         var totalSum = 0;
         var sum = 0;
-
         do
         {
-            sum = 0;
-            var copy = new char[data.GetLength(0), data.GetLength(1)];
-            for (int y = 0; y < data.GetLength(0); y++)
+            var copy = new char[t];
+            sum = Enumerable.Range(0, t).Where(i =>
             {
-                for (int x = 0; x < data.GetLength(1); x++)
+                copy[i] = all[i];
+                var x = i % l;
+                var y = i / l;
+                if (all[i] != '@') return false;
+                var rolls = offsets
+                    .Where(o => x + o.x < l && y + o.y < t / l && y + o.y >= 0 && x + o.x >= 0)
+                    .Count(o => all[(y + o.y) * l + x + o.x] == '@') < 4;
+                if (rolls)
                 {
-                    var current = data[y, x];
-
-                    var rolls = 0;
-                    copy[y, x] = current;
-                    if (current != '@')
-                    {
-                        continue;
-                    }
-                    foreach (var (dx, dy) in offsets)
-                    {
-                        if (x + dx < data.GetLength(1) && y + dy < data.GetLength(0) && y + dy >= 0 && x + dx >= 0)
-                        {
-                            if (data[y + dy, x + dx] == '@')
-                            {
-                                rolls++;
-                            }
-                        }
-                    }
-                    if (rolls < 4)
-                    {
-                        copy[y, x] = '.';
-                        sum++;
-                    }
+                    copy[i] = '.';
                 }
-            }
-            data = copy;
+
+                return rolls;
+            }).Count();
+            all = copy;
             totalSum += sum;
         } while (sum > 0);
 
