@@ -14,19 +14,20 @@ public class Day04 : DayBase
     public override string FirstStar()
     {
         var rows = GetRowData().Where(r => !string.IsNullOrWhiteSpace(r)).Select(s => s.Trim().ToCharArray());
-        var l = rows.First().Length;
+        var xMax = rows.First().Length;
         var all = rows.SelectMany(r => r).ToArray();
         var t = all.Count();
+        var yMax = t / xMax;
         (int x, int y)[] offsets = [(0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1)];
 
         return Enumerable.Range(0, t).Where(i =>
         {
-            var x = i % l;
-            var y = i / l;
+            var x = i % xMax;
+            var y = i / xMax;
             if (all[i] != '@') return false;
             return offsets
-                .Where(o => x + o.x < l && y + o.y < t / l && y + o.y >= 0 && x + o.x >= 0)
-                .Count(o => all[(y + o.y) * l + x + o.x] == '@') < 4;
+                .Where(o => x + o.x < xMax && y + o.y < yMax && y + o.y >= 0 && x + o.x >= 0)
+                .Count(o => all[(y + o.y) * xMax + x + o.x] == '@') < 4;
         }).Count()
         .ToString();
     }
@@ -34,9 +35,10 @@ public class Day04 : DayBase
     public override string SecondStar()
     {
         var rows = GetRowData().Where(r => !string.IsNullOrWhiteSpace(r)).Select(s => s.Trim().ToCharArray());
-        var l = rows.First().Length;
+        var xMax = rows.First().Length;
         var all = rows.SelectMany(r => r).ToArray();
         var t = all.Length;
+        var yMax = t / xMax;
         (int x, int y)[] offsets = [(0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1)];
 
         var totalSum = 0;
@@ -47,16 +49,14 @@ public class Day04 : DayBase
             sum = Enumerable.Range(0, t).Where(i =>
             {
                 copy[i] = all[i];
-                var x = i % l;
-                var y = i / l;
+                var x = i % xMax;
+                var y = i / xMax;
                 if (all[i] != '@') return false;
                 var rolls = offsets
-                    .Where(o => x + o.x < l && y + o.y < t / l && y + o.y >= 0 && x + o.x >= 0)
-                    .Count(o => all[(y + o.y) * l + x + o.x] == '@') < 4;
+                    .Where(o => x + o.x < xMax && y + o.y < yMax && y + o.y >= 0 && x + o.x >= 0)
+                    .Count(o => all[(y + o.y) * xMax + x + o.x] == '@') < 4;
                 if (rolls)
-                {
                     copy[i] = '.';
-                }
 
                 return rolls;
             }).Count();
