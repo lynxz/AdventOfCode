@@ -48,8 +48,8 @@ public class Day05 : DayBase
     public void MergeRanges(List<Range> ranges, int i)
     {
         if (i >= ranges.Count) return;
-        var currentRange = ranges[i];
 
+        var currentRange = ranges[i];
         for (int j = i + 1; j < ranges.Count; j++)
         {
             var range = ranges[j];
@@ -65,8 +65,6 @@ public class Day05 : DayBase
         }
         MergeRanges(ranges, i + 1);
     }
-
-
 }
 
 public record Range(long Start, long End);
